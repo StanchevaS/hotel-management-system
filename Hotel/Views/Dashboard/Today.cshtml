@@ -1,0 +1,183 @@
+﻿@using Hotel.Helpers
+@using Hotel.Models
+@{
+    ViewData["Title"] = "Днес";
+
+    var arrivals = ViewBag.TodayArrivals as List<Reservation> ?? new();
+    var departures = ViewBag.TodayDepartures as List<Reservation> ?? new();
+    var occupiedRooms = ViewBag.OccupiedRooms as List<Room> ?? new();
+    var reservedRooms = ViewBag.ReservedRooms as List<Room> ?? new();
+}
+
+<div class="card-style mb-4">
+    <h1 class="page-title">Днешен панел</h1>
+    <p class="text-muted mb-0">Бърз преглед на пристигащи, заминаващи и текуща заетост.</p>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-3 mb-3">
+        <div class="card-style text-center h-100">
+            <h3>@arrivals.Count</h3>
+            <p>Пристигащи днес</p>
+        </div>
+    </div>
+
+    <div class="col-md-3 mb-3">
+        <div class="card-style text-center h-100">
+            <h3>@departures.Count</h3>
+            <p>Заминаващи днес</p>
+        </div>
+    </div>
+
+    <div class="col-md-3 mb-3">
+        <div class="card-style text-center h-100">
+            <h3>@occupiedRooms.Count</h3>
+            <p>Заети стаи</p>
+        </div>
+    </div>
+
+    <div class="col-md-3 mb-3">
+        <div class="card-style text-center h-100">
+            <h3>@reservedRooms.Count</h3>
+            <p>Резервирани стаи</p>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-6 mb-4">
+        <div class="card-style h-100">
+            <h3 class="mb-3">Пристигащи днес</h3>
+
+            @if (arrivals.Any())
+            {
+                <div class="table-responsive">
+                    <table class="table table-bordered align-middle">
+                        <thead>
+                            <tr>
+                                <th>Гост</th>
+                                <th>Телефон</th>
+                                <th>Стая</th>
+                                <th>Действие</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in arrivals)
+                            {
+                                <tr>
+                                    <td>@item.GuestName</td>
+                                    <td>@item.Phone</td>
+                                    <td>@(item.Room?.Number ?? "-")</td>
+                                    <td>
+                                        <a asp-controller="Reservations"
+                                           asp-action="Edit"
+                                           asp-route-id="@item.Id"
+                                           class="btn btn-sm btn-outline-primary">
+                                            Отвори
+                                        </a>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+            else
+            {
+                <div class="text-muted">Няма пристигащи днес.</div>
+            }
+        </div>
+    </div>
+
+    <div class="col-lg-6 mb-4">
+        <div class="card-style h-100">
+            <h3 class="mb-3">Заминаващи днес</h3>
+
+            @if (departures.Any())
+            {
+                <div class="table-responsive">
+                    <table class="table table-bordered align-middle">
+                        <thead>
+                            <tr>
+                                <th>Гост</th>
+                                <th>Телефон</th>
+                                <th>Стая</th>
+                                <th>Действие</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in departures)
+                            {
+                                <tr>
+                                    <td>@item.GuestName</td>
+                                    <td>@item.Phone</td>
+                                    <td>@(item.Room?.Number ?? "-")</td>
+                                    <td>
+                                        <a asp-controller="Reservations"
+                                           asp-action="Edit"
+                                           asp-route-id="@item.Id"
+                                           class="btn btn-sm btn-outline-primary">
+                                            Отвори
+                                        </a>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+            else
+            {
+                <div class="text-muted">Няма заминаващи днес.</div>
+            }
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-6 mb-4">
+        <div class="card-style h-100">
+            <h3 class="mb-3">Заети стаи</h3>
+
+            @if (occupiedRooms.Any())
+            {
+                <ul class="list-group">
+                    @foreach (var room in occupiedRooms)
+                    {
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <span>Стая @room.Number</span>
+                            <span class="badge bg-danger">Заета</span>
+                        </li>
+                    }
+                </ul>
+            }
+            else
+            {
+                <div class="text-muted">Няма заети стаи в момента.</div>
+            }
+        </div>
+    </div>
+
+    <div class="col-lg-6 mb-4">
+        <div class="card-style h-100">
+            <h3 class="mb-3">Резервирани стаи</h3>
+
+            @if (reservedRooms.Any())
+            {
+                <ul class="list-group">
+                    @foreach (var room in reservedRooms)
+                    {
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <span>Стая @room.Number</span>
+                            <span class="badge bg-warning text-dark">Резервирана</span>
+                        </li>
+                    }
+                </ul>
+            }
+            else
+            {
+                <div class="text-muted">Няма резервирани стаи в момента.</div>
+            }
+        </div>
+    </div>
+</div>

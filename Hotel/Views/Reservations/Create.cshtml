@@ -1,0 +1,131 @@
+﻿@model Hotel.Models.Reservation
+
+@{
+    ViewData["Title"] = "Нова резервация";
+    var inquiryId = ViewBag.InquiryId as int?;
+    var preferredRoomNumber = ViewBag.PreferredRoomNumber as string;
+    bool hasSearchedRooms = ViewBag.HasSearchedRooms != null && (bool)ViewBag.HasSearchedRooms;
+}
+
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="mb-0">Нова резервация</h1>
+        <a asp-action="Index" class="btn btn-outline-secondary">Назад към резервациите</a>
+    </div>
+
+    @if (!ViewData.ModelState.IsValid)
+    {
+        <div asp-validation-summary="All" class="alert alert-danger"></div>
+    }
+
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <form method="post">
+                @Html.AntiForgeryToken()
+
+                @if (inquiryId.HasValue)
+                {
+                    <input type="hidden" name="inquiryId" value="@inquiryId" />
+                }
+
+                @if (!string.IsNullOrWhiteSpace(preferredRoomNumber))
+                {
+                    <input type="hidden" name="preferredRoomNumber" value="@preferredRoomNumber" />
+                }
+
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label asp-for="GuestName" class="form-label">Име на гост</label>
+                        <input asp-for="GuestName" class="form-control" />
+                        <span asp-validation-for="GuestName" class="text-danger"></span>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label asp-for="Phone" class="form-label">Телефон</label>
+                        <input asp-for="Phone" class="form-control" />
+                        <span asp-validation-for="Phone" class="text-danger"></span>
+                    </div>
+
+                    <div class="col-md-3">
+                        <label asp-for="CheckIn" class="form-label">Настаняване</label>
+                        <input asp-for="CheckIn" type="date" class="form-control" />
+                        <span asp-validation-for="CheckIn" class="text-danger"></span>
+                    </div>
+
+                    <div class="col-md-3">
+                        <label asp-for="CheckOut" class="form-label">Напускане</label>
+                        <input asp-for="CheckOut" type="date" class="form-control" />
+                        <span asp-validation-for="CheckOut" class="text-danger"></span>
+                    </div>
+
+                    <div class="col-md-2">
+                        <label asp-for="GuestsCount" class="form-label">Брой гости</label>
+                        <input asp-for="GuestsCount" type="number" min="1" class="form-control" />
+                        <span asp-validation-for="GuestsCount" class="text-danger"></span>
+                    </div>
+
+                    <div class="col-md-4">
+                        <label asp-for="Status" class="form-label">Статус</label>
+                        <select asp-for="Status" class="form-select" asp-items="ViewBag.ReservationStatuses"></select>
+                        <span asp-validation-for="Status" class="text-danger"></span>
+                    </div>
+
+                    <div class="col-md-8">
+                        <label asp-for="RoomId" class="form-label">Стая</label>
+                        <select asp-for="RoomId" class="form-select" asp-items="ViewBag.RoomList">
+                            <option value="">-- изберете стая --</option>
+                        </select>
+                        <span asp-validation-for="RoomId" class="text-danger"></span>
+
+                        @if (!string.IsNullOrWhiteSpace(preferredRoomNumber))
+                        {
+                            <div class="form-text">
+                                Предпочитана стая от запитването: <strong>@preferredRoomNumber</strong>
+                            </div>
+                        }
+
+                        @if (hasSearchedRooms)
+                        {
+                            <div class="form-text">
+                                Показани са свободните стаи за избрания период.
+                            </div>
+                        }
+                    </div>
+
+                    <div class="col-md-4 d-flex align-items-end">
+                        <div class="form-check mt-4">
+                            <input asp-for="IsPaid" class="form-check-input" />
+                            <label asp-for="IsPaid" class="form-check-label">Платено</label>
+                        </div>
+                    </div>
+
+                    <div class="col-12">
+                        <div class="d-flex flex-wrap gap-2 mt-3">
+                            <button type="submit"
+                                    asp-action="CheckAvailability"
+                                    class="btn btn-outline-primary">
+                                Провери свободни стаи
+                            </button>
+
+                            <button type="submit"
+                                    asp-action="Create"
+                                    class="btn btn-primary">
+                                Създай резервация
+                            </button>
+
+                            <a asp-action="Index" class="btn btn-outline-secondary">
+                                Отказ
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

@@ -1,0 +1,38 @@
+﻿@{
+    ViewData["Title"] = "Нов потребител";
+    var selectedRole = ViewBag.Role as string;
+}
+
+<div class="card-style">
+    <h1 class="page-title">Създаване на потребител</h1>
+
+    <form asp-action="CreateUser" method="post">
+        @Html.AntiForgeryToken()
+
+        <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+        <div class="mb-3">
+            <label class="form-label">Имейл</label>
+            <input type="email" name="email" class="form-control" />
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Парола</label>
+            <input type="password" name="password" class="form-control" />
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Роля</label>
+            <select name="role" class="form-control">
+                <option value="">-- Избери роля --</option>
+                <option value="Administrator" selected="@(selectedRole == "Administrator")">Administrator</option>
+                <option value="Receptionist" selected="@(selectedRole == "Receptionist")">Receptionist</option>
+            </select>
+        </div>
+
+        <div class="d-flex gap-2 flex-wrap">
+            <button type="submit" class="btn btn-primary">Създай</button>
+            <a asp-action="Users" class="btn btn-secondary">Назад</a>
+        </div>
+    </form>
+</div>

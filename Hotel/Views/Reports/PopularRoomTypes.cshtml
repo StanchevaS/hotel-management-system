@@ -1,0 +1,84 @@
+﻿@using System.Linq
+@model Hotel.Models.ReportFilter
+
+@{
+    ViewData["Title"] = "Търсени стаи";
+    var popularTypes = ViewBag.PopularTypes as System.Collections.IEnumerable;
+}
+
+<div class="card-style mb-4">
+    <h1 class="page-title">Справка за търсени типове стаи</h1>
+    <p class="hero-subtitle">
+        Преглед на най-търсените типове стаи и приходите от тях за избран период.
+    </p>
+</div>
+
+<div class="card-style mb-4">
+    <form asp-action="PopularRoomTypes" method="post" class="row g-3">
+        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+        <div class="col-md-4">
+            <label asp-for="StartDate" class="form-label">Начална дата</label>
+            <input asp-for="StartDate" type="date" class="form-control" />
+            <span asp-validation-for="StartDate" class="text-danger"></span>
+        </div>
+
+        <div class="col-md-4">
+            <label asp-for="EndDate" class="form-label">Крайна дата</label>
+            <input asp-for="EndDate" type="date" class="form-control" />
+            <span asp-validation-for="EndDate" class="text-danger"></span>
+        </div>
+
+        <div class="col-md-4 d-flex align-items-end">
+            <button type="submit" class="btn btn-primary w-100">Покажи справката</button>
+        </div>
+    </form>
+</div>
+
+@if (popularTypes != null)
+{
+    <div class="card-style">
+        <h2 class="mb-3">Резултати</h2>
+
+        <div class="table-responsive">
+            <table class="table table-hover align-middle">
+                <thead>
+                    <tr>
+                        <th>Тип стая</th>
+                        <th>Брой резервации</th>
+                        <th>Приход за периода</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in popularTypes)
+                    {
+                        var roomTypeObj = item.GetType().GetProperty("RoomType")?.GetValue(item, null);
+                        var countObj = item.GetType().GetProperty("Count")?.GetValue(item, null);
+                        var revenueObj = item.GetType().GetProperty("Revenue")?.GetValue(item, null);
+
+                        var roomType = roomTypeObj?.ToString() ?? "";
+                        var count = countObj != null ? (int)countObj : 0;
+                        var revenue = revenueObj != null ? (decimal)revenueObj : 0m;
+
+                        <tr>
+                            <td>@roomType</td>
+                            <td>@count</td>
+                            <td>@revenue.ToString("F2") EUR</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        @if (!popularTypes.Cast<object>().Any())
+        {
+            <div class="alert alert-info mt-3 mb-0">
+                Няма данни за избрания период.
+            </div>
+        }
+    </div>
+}
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

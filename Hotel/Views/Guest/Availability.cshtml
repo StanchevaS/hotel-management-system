@@ -1,0 +1,99 @@
+﻿@model IEnumerable<Hotel.Models.Room>
+@using Hotel.Helpers
+
+@{
+    ViewData["Title"] = "Наличност";
+    bool hasSearched = ViewBag.HasSearched != null && (bool)ViewBag.HasSearched;
+    DateTime? checkIn = ViewBag.CheckIn as DateTime?;
+    DateTime? checkOut = ViewBag.CheckOut as DateTime?;
+    int? guestsCount = ViewBag.GuestsCount as int?;
+}
+
+<div class="card-style">
+    <h1 class="page-title mb-3">Проверка за свободни стаи</h1>
+
+    <form asp-action="Availability" method="post" class="row g-3 mb-4">
+        @Html.AntiForgeryToken()
+
+        <div asp-validation-summary="ModelOnly" class="text-danger mb-2"></div>
+
+        <div class="col-md-4">
+            <label class="form-label">Настаняване</label>
+            <input type="date" name="checkIn" value="@(checkIn?.ToString("yyyy-MM-dd"))" class="form-control" required />
+        </div>
+
+        <div class="col-md-4">
+            <label class="form-label">Напускане</label>
+            <input type="date" name="checkOut" value="@(checkOut?.ToString("yyyy-MM-dd"))" class="form-control" required />
+        </div>
+
+        <div class="col-md-4">
+            <label class="form-label">Брой гости</label>
+            <input type="number" name="guestsCount" value="@(guestsCount ?? 1)" min="1" class="form-control" required />
+        </div>
+
+        <div class="col-12">
+            <button type="submit" class="btn btn-primary">Провери наличност</button>
+        </div>
+    </form>
+
+    @if (hasSearched)
+    {
+        <div class="alert alert-light border">
+            Проверка за период:
+            <strong>@checkIn?.ToString("dd.MM.yyyy")</strong>
+            -
+            <strong>@checkOut?.ToString("dd.MM.yyyy")</strong>,
+            гости:
+            <strong>@guestsCount</strong>
+        </div>
+
+        @if (Model != null && Model.Any())
+        {
+            <div class="row">
+                @foreach (var room in Model)
+                {
+                    <div class="col-lg-4 col-md-6 mb-4">
+                        <div class="card-style h-100">
+                            <h3 class="mb-2">Стая @room.Number</h3>
+
+                            <p class="mb-2">
+                                <strong>Тип:</strong> @RoomUiHelper.GetRoomTypeText(room.Type)
+                            </p>
+
+                            <p class="mb-2">
+                                <strong>Капацитет:</strong> @room.Capacity гости
+                            </p>
+
+                            <p class="mb-3">
+                                <strong>Цена на нощувка:</strong> @CurrencyHelper.ToEuro(room.PricePerNight)
+                            </p>
+
+                            <div class="d-flex gap-2 flex-wrap mt-auto">
+                                <a asp-controller="Inquiries"
+                                   asp-action="Create"
+                                   class="btn btn-primary btn-sm">
+                                    Изпрати запитване
+                                </a>
+
+                                <a asp-controller="Guest" asp-action="Rooms" class="btn btn-outline-primary btn-sm">
+                                    Виж всички стаи
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+        else
+        {
+            <div class="alert alert-info">
+                Няма свободни стаи за избрания период и брой гости.
+            </div>
+        }
+    }
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

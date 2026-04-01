@@ -1,0 +1,174 @@
+﻿@model IList<Hotel.Models.Reservation>
+@using Hotel.Enums
+@using Hotel.Helpers
+@using Hotel.Models
+
+@{
+    ViewData["Title"] = "График";
+
+    var dates = ViewBag.Dates as List<DateTime> ?? new();
+    var rooms = ViewBag.Rooms as List<Room> ?? new();
+    DateTime? startDate = ViewBag.StartDate as DateTime?;
+    int days = ViewBag.Days ?? 7;
+
+    Reservation? GetReservationForCell(int roomId, DateTime date)
+    {
+        return Model.FirstOrDefault(r =>
+            r.RoomId == roomId &&
+            r.CheckIn.Date <= date.Date &&
+            r.CheckOut.Date > date.Date);
+    }
+
+    string GetCellClass(Reservation? reservation)
+    {
+        if (reservation == null) return "calendar-free";
+
+        return reservation.Status switch
+        {
+            ReservationStatus.Pending => "calendar-pending",
+            ReservationStatus.Confirmed => "calendar-confirmed",
+            ReservationStatus.CheckedIn => "calendar-checkedin",
+            ReservationStatus.CheckedOut => "calendar-checkedout",
+            ReservationStatus.Cancelled => "calendar-cancelled",
+            _ => "calendar-free"
+        };
+    }
+
+    string GetCellText(Reservation? reservation)
+    {
+        if (reservation == null) return "Свободно";
+
+        return reservation.Status switch
+        {
+            ReservationStatus.Pending => "Чакаща",
+            ReservationStatus.Confirmed => "Резервирана",
+            ReservationStatus.CheckedIn => "Настанен",
+            ReservationStatus.CheckedOut => "Напуснал",
+            ReservationStatus.Cancelled => "Отказана",
+            _ => reservation.Status.ToString()
+        };
+    }
+
+    string GetShortGuestName(Reservation? reservation)
+    {
+        if (reservation == null || string.IsNullOrWhiteSpace(reservation.GuestName))
+            return string.Empty;
+
+        return reservation.GuestName.Length <= 18
+            ? reservation.GuestName
+            : reservation.GuestName[..18] + "...";
+    }
+}
+
+<div class="card-style">
+    <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+        <h1 class="page-title mb-0">Календар / график на резервациите</h1>
+
+        <a asp-action="Index" class="btn btn-secondary">
+            Към резервациите
+        </a>
+    </div>
+
+    <form method="get" asp-action="Calendar" class="row g-2 align-items-end mb-4">
+        <div class="col-md-3">
+            <label class="form-label">Начална дата</label>
+            <input name="startDate" type="date" value="@(startDate?.ToString("yyyy-MM-dd"))" class="form-control" />
+        </div>
+
+        <div class="col-md-3">
+            <label class="form-label">Стая</label>
+            <select name="roomId" class="form-select" asp-items="ViewBag.RoomList">
+                <option value="">-- Всички стаи --</option>
+            </select>
+        </div>
+
+        <div class="col-md-2">
+            <label class="form-label">Брой дни</label>
+            <input name="days" type="number" min="1" max="31" value="@days" class="form-control" />
+        </div>
+
+        <div class="col-md-3">
+            <button type="submit" class="btn btn-primary">Покажи график</button>
+        </div>
+    </form>
+
+    <div class="mb-3 d-flex flex-wrap gap-2">
+        <span class="calendar-legend calendar-free">Свободно</span>
+        <span class="calendar-legend calendar-pending">Чакаща</span>
+        <span class="calendar-legend calendar-confirmed">Резервирана</span>
+        <span class="calendar-legend calendar-checkedin">Настанен</span>
+        <span class="calendar-legend calendar-checkedout">Напуснал</span>
+        <span class="calendar-legend calendar-cancelled">Отказана</span>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table table-bordered align-middle reservation-calendar">
+            <thead>
+                <tr>
+                    <th style="min-width: 170px;">Стая</th>
+                    @foreach (var date in dates)
+                    {
+                        <th class="text-center" style="min-width: 140px;">
+                            <div>@date.ToString("dd.MM")</div>
+                            <small class="text-muted">@date.ToString("ddd")</small>
+                        </th>
+                    }
+                </tr>
+            </thead>
+            <tbody>
+                @if (rooms.Any())
+                {
+                    @foreach (var room in rooms)
+                    {
+                        <tr>
+                            <td class="fw-bold">
+                                <div>Стая @room.Number</div>
+                                <small class="text-muted">
+                                    @RoomUiHelper.GetRoomTypeText(room.Type)
+                                </small>
+                            </td>
+
+                            @foreach (var date in dates)
+                            {
+                                var reservation = GetReservationForCell(room.Id, date);
+                                var cellClass = GetCellClass(reservation);
+                                var cellText = GetCellText(reservation);
+                                var guestName = GetShortGuestName(reservation);
+
+                                <td class="@cellClass">
+                                    @if (reservation == null)
+                                    {
+                                        <div class="small fw-semibold">Свободно</div>
+                                    }
+                                    else
+                                    {
+                                        <div class="small fw-semibold">@cellText</div>
+                                        <div class="small">@guestName</div>
+                                        <div class="small text-muted">
+                                            @reservation.CheckIn.ToString("dd.MM")
+                                            -
+                                            @reservation.CheckOut.ToString("dd.MM")
+                                        </div>
+                                        <a asp-action="Edit"
+                                           asp-route-id="@reservation.Id"
+                                           class="small fw-semibold">
+                                            Отвори
+                                        </a>
+                                    }
+                                </td>
+                            }
+                        </tr>
+                    }
+                }
+                else
+                {
+                    <tr>
+                        <td colspan="100" class="text-center text-muted py-4">
+                            Няма въведени стаи.
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

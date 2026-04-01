@@ -1,0 +1,93 @@
+﻿@model IList<Hotel.Models.Room>
+@using Hotel.Enums
+@using Hotel.Helpers
+
+@{
+    ViewData["Title"] = "Стаи";
+    var typeFilter = ViewBag.TypeFilter as RoomType?;
+    int? guestsCount = ViewBag.GuestsCount as int?;
+    decimal? maxPrice = ViewBag.MaxPrice as decimal?;
+}
+
+<div class="card-style">
+    <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+        <h1 class="page-title mb-0">Стаи и цени</h1>
+        <a asp-controller="Guest" asp-action="Availability" class="btn btn-primary">Провери наличност</a>
+    </div>
+
+    <p class="text-muted mb-4">
+        Тук можете да разгледате основните типове стаи, капацитет и цени на нощувка.
+    </p>
+
+    <form method="get" asp-action="Rooms" class="row g-2 align-items-end mb-4">
+        <div class="col-md-3">
+            <label class="form-label">Тип стая</label>
+            <select name="typeFilter" class="form-control">
+                <option value="">-- Всички --</option>
+                <option value="@RoomType.StandardNoBalcony" selected="@(typeFilter == RoomType.StandardNoBalcony)">Стандартна стая без балкон</option>
+                <option value="@RoomType.Standard" selected="@(typeFilter == RoomType.Standard)">Стандартна стая</option>
+                <option value="@RoomType.Superior" selected="@(typeFilter == RoomType.Superior)">Супериорна стая</option>
+                <option value="@RoomType.Studio" selected="@(typeFilter == RoomType.Studio)">Студио</option>
+                <option value="@RoomType.FamilySuperior" selected="@(typeFilter == RoomType.FamilySuperior)">Фамилна супериорна стая</option>
+            </select>
+        </div>
+
+        <div class="col-md-3">
+            <label class="form-label">Брой гости</label>
+            <input name="guestsCount" value="@guestsCount" type="number" min="1" class="form-control" placeholder="Напр. 2" />
+        </div>
+
+        <div class="col-md-3">
+            <label class="form-label">Макс. цена (€)</label>
+            <input name="maxPrice" value="@maxPrice" type="number" step="0.01" min="0" class="form-control" placeholder="Напр. 80" />
+        </div>
+
+        <div class="col-md-3 d-flex gap-2">
+            <button type="submit" class="btn btn-primary">Филтрирай</button>
+            <a asp-controller="Guest" asp-action="Rooms" class="btn btn-secondary">Изчисти</a>
+        </div>
+    </form>
+
+    <div class="row">
+        @if (Model != null && Model.Any())
+        {
+            @foreach (var room in Model)
+            {
+                <div class="col-lg-4 col-md-6 mb-4">
+                    <div class="card-style h-100">
+                        <h3 class="mb-2">Стая @room.Number</h3>
+
+                        <p class="mb-2">
+                            <strong>Тип:</strong> @RoomUiHelper.GetRoomTypeText(room.Type)
+                        </p>
+
+                        <p class="mb-2">
+                            <strong>Капацитет:</strong> @room.Capacity гости
+                        </p>
+
+                        <p class="mb-3">
+                            <strong>Цена на нощувка:</strong> @CurrencyHelper.ToEuro(room.PricePerNight)
+                        </p>
+
+                        <div class="d-flex gap-2 flex-wrap mt-auto">
+                            <a asp-controller="Guest" asp-action="Availability" class="btn btn-primary btn-sm">
+                                Провери наличност
+                            </a>
+                            <a asp-controller="Inquiries" asp-action="Create" class="btn btn-outline-primary btn-sm">
+                                Изпрати запитване
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            }
+        }
+        else
+        {
+            <div class="col-12">
+                <div class="alert alert-info mb-0">
+                    Няма намерени стаи по избраните критерии.
+                </div>
+            </div>
+        }
+    </div>
+</div>

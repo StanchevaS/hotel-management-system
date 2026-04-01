@@ -1,0 +1,438 @@
+﻿@{
+    ViewData["Title"] = "Настаняване";
+}
+
+<div class="accommodation-page">
+
+    <section class="accommodation-hero card-style mb-4">
+        <div class="row align-items-center g-4">
+            <div class="col-lg-6">
+                <span class="accommodation-kicker">Hotel Golden Breeze</span>
+                <h1 class="accommodation-title">Настаняване</h1>
+
+                <p class="accommodation-lead">
+                    Изберете стая според начина, по който искате да прекарате своя престой –
+                    кратка почивка, романтичен уикенд, семейна ваканция или по-дълго настаняване.
+                    Всяко помещение е подготвено с внимание към удобството, спокойствието и приятната атмосфера.
+                </p>
+
+                <div class="accommodation-badges">
+                    <span>Закуската е включена в цената</span>
+                    <span>Безплатен Wi-Fi във всички части на хотела</span>
+                    <span>Частен паркинг срещу допълнително заплащане</span>
+                </div>
+
+                <div class="mt-4 d-flex flex-wrap gap-2">
+                    <a asp-controller="Guest" asp-action="Availability" class="btn btn-primary">
+                        Провери наличност
+                    </a>
+                    <a asp-controller="Inquiries" asp-action="Create" class="btn btn-outline-primary">
+                        Изпрати запитване
+                    </a>
+                </div>
+            </div>
+
+            <div class="col-lg-6">
+                <div class="accommodation-hero-image">
+                    <img src="~/images/hotel/hero-accommodation.png" alt="Настаняване в Hotel Golden Breeze" />
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="card-style mb-4">
+        <div class="row g-3 text-center">
+            <div class="col-md-4">
+                <div class="room-feature-chip h-100">
+                    <h2 class="room-feature-title">Комфортен престой</h2>
+                    <p class="room-feature-text mb-0">
+                        Светли и поддържани помещения, създадени за спокойствие и удобство.
+                    </p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="room-feature-chip h-100">
+                    <h2 class="room-feature-title">Подходящо за различни гости</h2>
+                    <p class="room-feature-text mb-0">
+                        Избор от стаи за двойки, индивидуални гости, семейства и по-дълъг престой.
+                    </p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="room-feature-chip h-100">
+                    <h2 class="room-feature-title">Бързо запитване</h2>
+                    <p class="room-feature-text mb-0">
+                        Лесно проверяване на наличности и бърза заявка за предпочитан тип стая.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="room-section card-style mb-4">
+        <div class="row g-4 align-items-start">
+            <div class="col-lg-7">
+                <div class="room-heading-wrap">
+                    <span class="room-label">Практичен избор</span>
+                    <h2 class="room-title">Стандартна стая без балкон</h2>
+                </div>
+
+                <div class="room-main-image mb-3">
+                    <img id="room-main-standard-no-balcony"
+                         src="~/images/rooms/standard-no-balcony-main.png"
+                         alt="Стандартна стая без балкон" />
+                </div>
+
+                <div class="room-gallery" data-target="room-main-standard-no-balcony">
+                    <img src="~/images/rooms/standard-no-balcony-1.png" alt="Стандартна стая без балкон - снимка 1" />
+                    <img src="~/images/rooms/standard-no-balcony-2.png" alt="Стандартна стая без балкон - снимка 2" />
+                    <img src="~/images/rooms/standard-no-balcony-3.png" alt="Стандартна стая без балкон - снимка 3" />
+                </div>
+            </div>
+
+            <div class="col-lg-5">
+                <p class="room-description">
+                    Уютна и практична стая за гости, които търсят комфортен престой на отлична цена.
+                    Интериорът е изчистен, светъл и функционален, с всичко необходимо за спокойна почивка.
+                </p>
+
+                <div class="room-highlights">
+                    <span>Подходяща за кратък престой</span>
+                    <span>Отличен избор за двама</span>
+                    <span>Практична и удобна</span>
+                </div>
+
+                <div class="room-info-box">
+                    <h3>Всяка стая е оборудвана със:</h3>
+                    <ul>
+                        <li>Wi-Fi</li>
+                        <li>Климатик</li>
+                        <li>Телевизор</li>
+                        <li>Минибар</li>
+                        <li>Бюро</li>
+                        <li>Самостоятелна баня с душ или вана</li>
+                        <li>Сешоар</li>
+                        <li>Гардероб</li>
+                    </ul>
+                </div>
+
+                <div class="room-meta">
+                    <div class="room-meta-item">
+                        <span class="room-meta-label">Капацитет</span>
+                        <span class="room-meta-value">2 възрастни</span>
+                    </div>
+                    <div class="room-meta-item">
+                        <span class="room-meta-label">Цена</span>
+                        <span class="room-meta-value room-price-value">74.00 EUR / вечер</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="room-section card-style mb-4">
+        <div class="row g-4 align-items-start">
+            <div class="col-lg-7">
+                <div class="room-heading-wrap">
+                    <span class="room-label">Класически комфорт</span>
+                    <h2 class="room-title">Стандартна стая</h2>
+                </div>
+
+                <div class="room-main-image mb-3">
+                    <img id="room-main-standard"
+                         src="~/images/rooms/standard-main.png"
+                         alt="Стандартна стая" />
+                </div>
+
+                <div class="room-gallery" data-target="room-main-standard">
+                    <img src="~/images/rooms/standard-1.png" alt="Стандартна стая - снимка 1" />
+                    <img src="~/images/rooms/standard-2.png" alt="Стандартна стая - снимка 2" />
+                    <img src="~/images/rooms/standard-3.png" alt="Стандартна стая - снимка 3" />
+                </div>
+            </div>
+
+            <div class="col-lg-5">
+                <p class="room-description">
+                    Светла и удобна стая с приятна атмосфера, подходяща за двойки и индивидуални гости.
+                    Предлага комфортно обзавеждане и уютна среда за пълноценен престой край морето.
+                </p>
+
+                <div class="room-highlights">
+                    <span>С балкон</span>
+                    <span>Подходяща за двойки</span>
+                    <span>Уютна атмосфера</span>
+                </div>
+
+                <div class="room-info-box">
+                    <h3>Всяка стая е оборудвана със:</h3>
+                    <ul>
+                        <li>Wi-Fi</li>
+                        <li>Климатик</li>
+                        <li>Телевизор</li>
+                        <li>Минибар</li>
+                        <li>Балкон</li>
+                        <li>Кът за сядане</li>
+                        <li>Самостоятелна баня с душ</li>
+                        <li>Сешоар</li>
+                    </ul>
+                </div>
+
+                <div class="room-meta">
+                    <div class="room-meta-item">
+                        <span class="room-meta-label">Капацитет</span>
+                        <span class="room-meta-value">2 възрастни</span>
+                    </div>
+                    <div class="room-meta-item">
+                        <span class="room-meta-label">Цена</span>
+                        <span class="room-meta-value room-price-value">84.00 EUR / вечер</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="room-section card-style mb-4">
+        <div class="row g-4 align-items-start">
+            <div class="col-lg-7">
+                <div class="room-heading-wrap">
+                    <span class="room-label">Повече удобство</span>
+                    <h2 class="room-title">Супериорна стая</h2>
+                </div>
+
+                <div class="room-main-image mb-3">
+                    <img id="room-main-superior"
+                         src="~/images/rooms/superior-main.png"
+                         alt="Супериорна стая" />
+                </div>
+
+                <div class="room-gallery" data-target="room-main-superior">
+                    <img src="~/images/rooms/superior-1.png" alt="Супериорна стая - снимка 1" />
+                    <img src="~/images/rooms/superior-2.png" alt="Супериорна стая - снимка 2" />
+                    <img src="~/images/rooms/superior-3.png" alt="Супериорна стая - снимка 3" />
+                </div>
+            </div>
+
+            <div class="col-lg-5">
+                <p class="room-description">
+                    По-просторна и по-елегантна стая, създадена за гости, които държат на повече комфорт
+                    и по-високо ниво на настаняване. Отличава се с по-премиум усещане и повече удобства.
+                </p>
+
+                <div class="room-highlights">
+                    <span>По-просторна</span>
+                    <span>Премиум усещане</span>
+                    <span>Идеална за двама</span>
+                </div>
+
+                <div class="room-info-box">
+                    <h3>Всяка стая е оборудвана със:</h3>
+                    <ul>
+                        <li>Wi-Fi</li>
+                        <li>Климатик</li>
+                        <li>Смарт телевизор</li>
+                        <li>Минибар</li>
+                        <li>Балкон</li>
+                        <li>Кафе сет</li>
+                        <li>Сейф</li>
+                        <li>Самостоятелна баня с душ</li>
+                        <li>Сешоар</li>
+                    </ul>
+                </div>
+
+                <div class="room-meta">
+                    <div class="room-meta-item">
+                        <span class="room-meta-label">Капацитет</span>
+                        <span class="room-meta-value">2 възрастни</span>
+                    </div>
+                    <div class="room-meta-item">
+                        <span class="room-meta-label">Цена</span>
+                        <span class="room-meta-value room-price-value">99.00 EUR / вечер</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="room-section card-style mb-4">
+        <div class="row g-4 align-items-start">
+            <div class="col-lg-7">
+                <div class="room-heading-wrap">
+                    <span class="room-label">Повече пространство</span>
+                    <h2 class="room-title">Студио</h2>
+                </div>
+
+                <div class="room-main-image mb-3">
+                    <img id="room-main-studio"
+                         src="~/images/rooms/studio-main.png"
+                         alt="Студио" />
+                </div>
+
+                <div class="room-gallery" data-target="room-main-studio">
+                    <img src="~/images/rooms/studio-1.png" alt="Студио - снимка 1" />
+                    <img src="~/images/rooms/studio-2.png" alt="Студио - снимка 2" />
+                    <img src="~/images/rooms/studio-3.png" alt="Студио - снимка 3" />
+                </div>
+            </div>
+
+            <div class="col-lg-5">
+                <p class="room-description">
+                    Просторно и функционално помещение, подходящо за по-дълъг престой или за гости,
+                    които предпочитат повече пространство и удобство. Предлага уютна зона за отдих
+                    и по-високо ниво на комфорт.
+                </p>
+
+                <div class="room-highlights">
+                    <span>По-дълъг престой</span>
+                    <span>Допълнително удобство</span>
+                    <span>Безплатен паркинг</span>
+                </div>
+
+                <div class="room-info-box">
+                    <h3>Всяка стая е оборудвана със:</h3>
+                    <ul>
+                        <li>Wi-Fi</li>
+                        <li>Климатик</li>
+                        <li>Смарт телевизор</li>
+                        <li>Минибар</li>
+                        <li>Балкон</li>
+                        <li>Кът за сядане</li>
+                        <li>Кафе машина</li>
+                        <li>Сейф</li>
+                        <li>Самостоятелна баня</li>
+                        <li>Сешоар</li>
+                    </ul>
+                </div>
+
+                <div class="room-meta">
+                    <div class="room-meta-item">
+                        <span class="room-meta-label">Капацитет</span>
+                        <span class="room-meta-value">2 възрастни + 1 дете</span>
+                    </div>
+                    <div class="room-meta-item">
+                        <span class="room-meta-label">Цена</span>
+                        <span class="room-meta-value room-price-value">112.00 EUR / вечер</span>
+                    </div>
+                    <div class="room-meta-item room-meta-item-full">
+                        <span class="room-meta-label">Включено</span>
+                        <span class="room-meta-value">Безплатен паркинг</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="room-section card-style mb-4">
+        <div class="row g-4 align-items-start">
+            <div class="col-lg-7">
+                <div class="room-heading-wrap">
+                    <span class="room-label">Семеен комфорт</span>
+                    <h2 class="room-title">Фамилна супериорна стая</h2>
+                </div>
+
+                <div class="room-main-image mb-3">
+                    <img id="room-main-family-superior"
+                         src="~/images/rooms/family-superior-main.png"
+                         alt="Фамилна супериорна стая" />
+                </div>
+
+                <div class="room-gallery" data-target="room-main-family-superior">
+                    <img src="~/images/rooms/family-superior-1.png" alt="Фамилна супериорна стая - снимка 1" />
+                    <img src="~/images/rooms/family-superior-2.png" alt="Фамилна супериорна стая - снимка 2" />
+                    <img src="~/images/rooms/family-superior-3.png" alt="Фамилна супериорна стая - снимка 3" />
+                </div>
+            </div>
+
+            <div class="col-lg-5">
+                <p class="room-description">
+                    Отличен избор за семейства, които търсят повече пространство, удобство и комфорт
+                    по време на своята почивка. Разпределението е практично и осигурява приятно усещане
+                    за по-дълъг и спокоен престой.
+                </p>
+
+                <div class="room-highlights">
+                    <span>Подходяща за семейства</span>
+                    <span>Повече пространство</span>
+                    <span>По-висок комфорт</span>
+                </div>
+
+                <div class="room-info-box">
+                    <h3>Всяка стая е оборудвана със:</h3>
+                    <ul>
+                        <li>Wi-Fi</li>
+                        <li>Климатик</li>
+                        <li>Смарт телевизор</li>
+                        <li>Минибар</li>
+                        <li>Балкон</li>
+                        <li>Допълнителни легла или разтегателен диван</li>
+                        <li>Сейф</li>
+                        <li>Самостоятелна баня</li>
+                        <li>Сешоар</li>
+                        <li>Място за багаж</li>
+                    </ul>
+                </div>
+
+                <div class="room-meta">
+                    <div class="room-meta-item">
+                        <span class="room-meta-label">Капацитет</span>
+                        <span class="room-meta-value">2 възрастни + 2 деца или 3 възрастни</span>
+                    </div>
+                    <div class="room-meta-item">
+                        <span class="room-meta-label">Цена</span>
+                        <span class="room-meta-value room-price-value">139.00 EUR / вечер</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="card-style text-center accommodation-cta-final">
+        <span class="accommodation-kicker">Резервации и запитвания</span>
+        <h2 class="mb-3">Планирайте своя престой</h2>
+        <p class="text-muted mb-4">
+            Ако желаете повече информация относно свободни дати, типове стаи и условия за настаняване,
+            използвайте формата за запитване или направете бърза проверка за наличност.
+        </p>
+
+        <div class="d-flex justify-content-center gap-2 flex-wrap">
+            <a asp-controller="Guest" asp-action="Availability" class="btn btn-primary">
+                Провери наличност
+            </a>
+            <a asp-controller="Inquiries" asp-action="Create" class="btn btn-outline-primary">
+                Изпрати запитване
+            </a>
+        </div>
+    </section>
+
+</div>
+
+@section Scripts {
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const galleries = document.querySelectorAll(".room-gallery");
+
+            galleries.forEach(function (gallery) {
+                const targetId = gallery.getAttribute("data-target");
+                const mainImage = document.getElementById(targetId);
+
+                if (!mainImage) return;
+
+                const thumbs = gallery.querySelectorAll("img");
+
+                thumbs.forEach(function (thumb) {
+                    thumb.style.cursor = "pointer";
+
+                    thumb.addEventListener("click", function () {
+                        const previousSrc = mainImage.getAttribute("src");
+                        const previousAlt = mainImage.getAttribute("alt");
+
+                        mainImage.setAttribute("src", thumb.getAttribute("src"));
+                        mainImage.setAttribute("alt", thumb.getAttribute("alt"));
+
+                        thumb.setAttribute("src", previousSrc);
+                        thumb.setAttribute("alt", previousAlt);
+                    });
+                });
+            });
+        });
+    </script>
+}

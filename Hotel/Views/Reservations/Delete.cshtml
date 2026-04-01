@@ -1,0 +1,44 @@
+﻿@model Hotel.Models.Reservation
+@using Hotel.Helpers
+
+@{
+    ViewData["Title"] = "Изтриване на резервация";
+}
+
+<div class="card-style">
+    <h1 class="page-title text-danger">Изтриване на резервация</h1>
+
+    <div class="alert alert-warning">
+        Сигурни ли сте, че искате да изтриете тази резервация?
+    </div>
+
+    <dl class="row">
+        <dt class="col-sm-3">Гост</dt>
+        <dd class="col-sm-9">@Model.GuestName</dd>
+
+        <dt class="col-sm-3">Телефон</dt>
+        <dd class="col-sm-9">@Model.Phone</dd>
+
+        <dt class="col-sm-3">Настаняване</dt>
+        <dd class="col-sm-9">@Model.CheckIn.ToString("dd.MM.yyyy")</dd>
+
+        <dt class="col-sm-3">Напускане</dt>
+        <dd class="col-sm-9">@Model.CheckOut.ToString("dd.MM.yyyy")</dd>
+
+        <dt class="col-sm-3">Стая</dt>
+        <dd class="col-sm-9">@(Model.Room?.Number ?? "-")</dd>
+
+        <dt class="col-sm-3">Сума</dt>
+        <dd class="col-sm-9">@CurrencyHelper.ToEuro(Model.TotalAmount)</dd>
+    </dl>
+
+    <form asp-action="DeleteConfirmed" method="post">
+        @Html.AntiForgeryToken()
+        <input type="hidden" name="id" value="@Model.Id" />
+
+        <div class="d-flex gap-2 flex-wrap">
+            <button type="submit" class="btn btn-danger">Изтрий</button>
+            <a asp-action="Index" class="btn btn-secondary">Отказ</a>
+        </div>
+    </form>
+</div>

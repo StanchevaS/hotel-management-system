@@ -1,0 +1,131 @@
+﻿@model Hotel.Models.Inquiry
+
+@{
+    ViewData["Title"] = "Редакция на запитване";
+    var statusOptions = ViewBag.StatusOptions as List<string> ?? new List<string>();
+}
+
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="mb-0">Редакция на запитване</h1>
+        <a asp-action="Index" class="btn btn-outline-secondary">Назад към запитванията</a>
+    </div>
+
+    @if (!ViewData.ModelState.IsValid)
+    {
+        <div asp-validation-summary="All" class="alert alert-danger"></div>
+    }
+
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <form asp-action="Edit" method="post">
+                @Html.AntiForgeryToken()
+                <input asp-for="Id" type="hidden" />
+                <input asp-for="CreatedOn" type="hidden" />
+
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label asp-for="Name" class="form-label">Име</label>
+                        <input asp-for="Name" class="form-control" />
+                        <span asp-validation-for="Name" class="text-danger"></span>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label asp-for="Phone" class="form-label">Телефон</label>
+                        <input asp-for="Phone" class="form-control" />
+                        <span asp-validation-for="Phone" class="text-danger"></span>
+                    </div>
+
+                    <div class="col-md-3">
+                        <label asp-for="CheckIn" class="form-label">Настаняване</label>
+                        <input asp-for="CheckIn" type="date" class="form-control" />
+                        <span asp-validation-for="CheckIn" class="text-danger"></span>
+                    </div>
+
+                    <div class="col-md-3">
+                        <label asp-for="CheckOut" class="form-label">Напускане</label>
+                        <input asp-for="CheckOut" type="date" class="form-control" />
+                        <span asp-validation-for="CheckOut" class="text-danger"></span>
+                    </div>
+
+                    <div class="col-md-2">
+                        <label asp-for="GuestsCount" class="form-label">Брой гости</label>
+                        <input asp-for="GuestsCount" type="number" min="1" class="form-control" />
+                        <span asp-validation-for="GuestsCount" class="text-danger"></span>
+                    </div>
+
+                    <div class="col-md-4">
+                        <label asp-for="PreferredRoom" class="form-label">Предпочитан тип стая</label>
+                        <select asp-for="PreferredRoom" class="form-select" asp-items="ViewBag.PreferredRoomTypes">
+                            <option value="">-- изберете тип стая --</option>
+                        </select>
+                        <span asp-validation-for="PreferredRoom" class="text-danger"></span>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label asp-for="Status" class="form-label">Статус</label>
+                        <select asp-for="Status" class="form-select">
+                            @foreach (var status in statusOptions)
+                            {
+                                if (Model.Status == status)
+                                {
+                                    <option value="@status" selected>@status</option>
+                                }
+                                else
+                                {
+                                    <option value="@status">@status</option>
+                                }
+                            }
+                        </select>
+                        <span asp-validation-for="Status" class="text-danger"></span>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label">Създадено на</label>
+                        <input value="@Model.CreatedOn.ToString("dd.MM.yyyy HH:mm")" class="form-control" readonly />
+                    </div>
+
+                    <div class="col-12">
+                        <label asp-for="Message" class="form-label">Съобщение</label>
+                        <textarea asp-for="Message" class="form-control" rows="5"></textarea>
+                        <span asp-validation-for="Message" class="text-danger"></span>
+                    </div>
+
+                    <div class="col-12">
+                        <div class="d-flex flex-wrap gap-2 mt-3">
+                            <button type="submit" class="btn btn-primary">
+                                Запази промените
+                            </button>
+
+                            @if (Model.Status != "Превърнато в резервация" && Model.Status != "Отказано")
+                            {
+                                <a asp-controller="Reservations"
+                                   asp-action="Create"
+                                   asp-route-inquiryId="@Model.Id"
+                                   asp-route-guestName="@Model.Name"
+                                   asp-route-phone="@Model.Phone"
+                                   asp-route-checkIn="@Model.CheckIn.ToString("yyyy-MM-dd")"
+                                   asp-route-checkOut="@Model.CheckOut.ToString("yyyy-MM-dd")"
+                                   asp-route-guestsCount="@Model.GuestsCount"
+                                   asp-route-preferredRoomType="@Model.PreferredRoom"
+                                   class="btn btn-success">
+                                    Превърни в резервация
+                                </a>
+                            }
+
+                            <a asp-action="Index" class="btn btn-outline-secondary">
+                                Назад
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

@@ -1,0 +1,205 @@
+﻿@{
+    ViewData["Title"] = "Начало";
+}
+
+@if (User.IsInRole("Administrator") || User.IsInRole("Receptionist"))
+{
+    <div class="card-style text-center mb-4">
+        <h1 class="hero-title">Система за управление на хотел</h1>
+        <p class="hero-subtitle">
+            Управление на стаи, резервации и хотелска администрация
+        </p>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-md-3 mb-3">
+            <div class="card-style text-center h-100">
+                <h3>@ViewBag.TotalRooms</h3>
+                <p>Общ брой стаи</p>
+            </div>
+        </div>
+
+        <div class="col-md-3 mb-3">
+            <div class="card-style text-center h-100">
+                <h3>@ViewBag.ActiveReservations</h3>
+                <p>Активни резервации</p>
+            </div>
+        </div>
+
+        <div class="col-md-3 mb-3">
+            <div class="card-style text-center h-100">
+                <h3>@ViewBag.FreeRooms</h3>
+                <p>Свободни стаи</p>
+            </div>
+        </div>
+
+        <div class="col-md-3 mb-3">
+            <div class="card-style text-center h-100">
+                <h3>@ViewBag.OccupiedRooms</h3>
+                <p>Заети / резервирани стаи</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-3 mb-3">
+            <div class="card-style h-100">
+                <h3>Днес</h3>
+                <p>Бърз преглед на пристигащи, заминаващи и текуща заетост.</p>
+                <a asp-controller="Dashboard" asp-action="Today" class="btn btn-primary">Към панела</a>
+            </div>
+        </div>
+
+        <div class="col-md-3 mb-3">
+            <div class="card-style h-100">
+                <h3>Стаи</h3>
+                <p>Преглед и управление на стаите и тяхното състояние.</p>
+                <a asp-controller="Rooms" asp-action="Index" class="btn btn-primary">Към стаите</a>
+            </div>
+        </div>
+
+        <div class="col-md-3 mb-3">
+            <div class="card-style h-100">
+                <h3>Резервации</h3>
+                <p>Създаване, редакция и проследяване на хотелските резервации.</p>
+                <a asp-controller="Reservations" asp-action="Index" class="btn btn-primary">Към резервациите</a>
+            </div>
+        </div>
+
+        <div class="col-md-3 mb-3">
+            <div class="card-style h-100">
+                <h3>График</h3>
+                <p>График по стаи и дати за по-лесно планиране.</p>
+                <a asp-controller="Reservations" asp-action="Calendar" class="btn btn-primary">Към графика</a>
+            </div>
+        </div>
+    </div>
+}
+else
+{
+    <div class="accommodation-page">
+
+        <section class="accommodation-hero card-style mb-4">
+            <div class="row align-items-center g-4">
+                <div class="col-lg-6">
+                    <span class="accommodation-kicker">Hotel Golden Breeze</span>
+                    <h1 class="accommodation-title">Спокойствие и комфорт край морето</h1>
+
+                    <p class="accommodation-lead">
+                        Hotel Golden Breeze е модерен морски хотел в к.к. Златни пясъци,
+                        създаден за приятен престой, спокойна атмосфера и удобство на няколко
+                        минути от плажа.
+                    </p>
+
+                    <div class="accommodation-badges">
+                        <span>На 5 минути пеша от плажа</span>
+                        <span>Комфортни стаи и апартаменти</span>
+                        <span>Подходящ за семейства и двойки</span>
+                    </div>
+                </div>
+
+                <div class="col-lg-6">
+                    <div class="accommodation-hero-image">
+                        <img src="~/images/hotel/hero-accommodation.png" alt="Hotel Golden Breeze" />
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="card-style mb-4">
+            <div class="row g-3 text-center">
+                <div class="col-md-4">
+                    <div class="room-feature-chip h-100">
+                        <h2 class="room-feature-title">Удобна локация</h2>
+                        <p class="room-feature-text mb-0">
+                            Хотелът се намира в к.к. Златни пясъци, с лесен достъп до плажа,
+                            алеята, заведенията и основните атракции.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="col-md-4">
+                    <div class="room-feature-chip h-100">
+                        <h2 class="room-feature-title">Комфортен престой</h2>
+                        <p class="room-feature-text mb-0">
+                            Стаи и апартаменти, проектирани за уют, спокойствие и приятно усещане
+                            за почивка край морето.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="col-md-4">
+                    <div class="room-feature-chip h-100">
+                        <h2 class="room-feature-title">Практични удобства</h2>
+                        <p class="room-feature-text mb-0">
+                            Безплатен Wi-Fi, сезонен басейн, ресторант, лоби бар и удобства,
+                            които правят престоя по-приятен.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="card-style mb-4">
+            <div class="row g-4">
+                <div class="col-lg-3 col-md-6">
+                    <div class="about-feature-box h-100">
+                        <h3>За хотела</h3>
+                        <p class="mb-3">
+                            Научете повече за атмосферата, удобствата и полезната информация за престоя.
+                        </p>
+                        <a asp-controller="Home" asp-action="About" class="btn btn-outline-primary">
+                            Научи повече
+                        </a>
+                    </div>
+                </div>
+
+                <div class="col-lg-3 col-md-6">
+                    <div class="about-feature-box h-100">
+                        <h3>Настаняване</h3>
+                        <p class="mb-3">
+                            Разгледайте нашите стаи и апартаменти и изберете най-подходящия вариант.
+                        </p>
+                        <a asp-controller="Home" asp-action="Accommodation" class="btn btn-primary">
+                            Виж стаите
+                        </a>
+                    </div>
+                </div>
+
+                <div class="col-lg-3 col-md-6">
+                    <div class="about-feature-box h-100">
+                        <h3>Наличност</h3>
+                        <p class="mb-3">
+                            Проверете свободните дати според избрания период и планирайте своя престой.
+                        </p>
+                        <a asp-controller="Guest" asp-action="Availability" class="btn btn-primary">
+                            Провери наличност
+                        </a>
+                    </div>
+                </div>
+
+                <div class="col-lg-3 col-md-6">
+                    <div class="about-feature-box h-100">
+                        <h3>Запитване</h3>
+                        <p class="mb-3">
+                            Изпратете запитване за желани дати, предпочитана стая и допълнителна информация.
+                        </p>
+                        <a asp-controller="Inquiries" asp-action="Create" class="btn btn-primary">
+                            Изпрати запитване
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="card-style text-center accommodation-cta-final">
+            <span class="accommodation-kicker">Вашето място край морето</span>
+            <h2 class="mb-3" style="color: var(--gold-700); font-weight: 900;">Приятен престой в Hotel Golden Breeze</h2>
+            <p class="text-muted mb-0">
+                Комбинация от удобна локация, модерна обстановка и спокойна атмосфера
+                за пълноценна почивка в к.к. Златни пясъци.
+            </p>
+        </section>
+
+    </div>
+}

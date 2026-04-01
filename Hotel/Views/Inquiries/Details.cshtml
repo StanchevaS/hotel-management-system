@@ -1,0 +1,138 @@
+﻿@model Hotel.Models.Inquiry
+
+@{
+    ViewData["Title"] = "Детайли за запитване";
+
+    var badgeClass = Model.Status switch
+    {
+        "Ново" => "bg-primary",
+        "Обработва се" => "bg-warning text-dark",
+        "Обработено" => "bg-success",
+        "Отказано" => "bg-danger",
+        "Превърнато в резервация" => "bg-secondary",
+        _ => "bg-dark"
+    };
+}
+
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="mb-0">Детайли за запитване</h1>
+        <a asp-action="Index" class="btn btn-outline-secondary">Назад към запитванията</a>
+    </div>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success">
+            @TempData["SuccessMessage"]
+        </div>
+    }
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger">
+            @TempData["ErrorMessage"]
+        </div>
+    }
+
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <div class="row g-4">
+                <div class="col-md-6">
+                    <div class="border rounded p-3 h-100">
+                        <h5 class="mb-3">Информация за клиента</h5>
+
+                        <div class="mb-2">
+                            <strong>Име:</strong> @Model.Name
+                        </div>
+
+                        <div class="mb-2">
+                            <strong>Телефон:</strong> @Model.Phone
+                        </div>
+
+                        <div class="mb-2">
+                            <strong>Брой гости:</strong> @Model.GuestsCount
+                        </div>
+
+                        <div class="mb-2">
+                            <strong>Предпочитана стая:</strong>
+                            @if (!string.IsNullOrWhiteSpace(Model.PreferredRoom))
+                            {
+                                @Model.PreferredRoom
+                            }
+                            else
+                            {
+                                <span>-</span>
+                            }
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="border rounded p-3 h-100">
+                        <h5 class="mb-3">Информация за периода</h5>
+
+                        <div class="mb-2">
+                            <strong>Настаняване:</strong> @Model.CheckIn.ToString("dd.MM.yyyy")
+                        </div>
+
+                        <div class="mb-2">
+                            <strong>Напускане:</strong> @Model.CheckOut.ToString("dd.MM.yyyy")
+                        </div>
+
+                        <div class="mb-2">
+                            <strong>Статус:</strong>
+                            <span class="badge @badgeClass">@Model.Status</span>
+                        </div>
+
+                        <div class="mb-2">
+                            <strong>Създадено на:</strong> @Model.CreatedOn.ToString("dd.MM.yyyy HH:mm")
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-12">
+                    <div class="border rounded p-3">
+                        <h5 class="mb-3">Съобщение</h5>
+
+                        @if (!string.IsNullOrWhiteSpace(Model.Message))
+                        {
+                            <div style="white-space: pre-line;">@Model.Message</div>
+                        }
+                        else
+                        {
+                            <span class="text-muted">Няма въведено съобщение.</span>
+                        }
+                    </div>
+                </div>
+
+                <div class="col-12">
+                    <div class="d-flex flex-wrap gap-2">
+                        <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-warning">
+                            Редакция
+                        </a>
+
+                        @if (Model.Status != "Превърнато в резервация" && Model.Status != "Отказано")
+                        {
+                            <a asp-controller="Reservations"
+                               asp-action="Create"
+                               asp-route-inquiryId="@Model.Id"
+                               asp-route-guestName="@Model.Name"
+                               asp-route-phone="@Model.Phone"
+                               asp-route-checkIn="@Model.CheckIn.ToString("yyyy-MM-dd")"
+                               asp-route-checkOut="@Model.CheckOut.ToString("yyyy-MM-dd")"
+                               asp-route-guestsCount="@Model.GuestsCount"
+                               asp-route-preferredRoomNumber="@Model.PreferredRoom"
+                               class="btn btn-success">
+                                Превърни в резервация
+                            </a>
+                        }
+
+                        <a asp-action="Index" class="btn btn-outline-secondary">
+                            Назад
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

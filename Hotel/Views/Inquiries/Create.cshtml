@@ -1,0 +1,100 @@
+﻿@model Hotel.Models.Inquiry
+
+@{
+    ViewData["Title"] = "Изпрати запитване";
+}
+
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1 class="mb-0">Изпрати запитване</h1>
+                <a asp-controller="Guest" asp-action="Rooms" class="btn btn-outline-secondary">Назад</a>
+            </div>
+
+            @if (TempData["SuccessMessage"] != null)
+            {
+                <div class="alert alert-success">
+                    @TempData["SuccessMessage"]
+                </div>
+            }
+
+            @if (!ViewData.ModelState.IsValid)
+            {
+                <div asp-validation-summary="All" class="alert alert-danger"></div>
+            }
+
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <form asp-action="Create" method="post">
+                        @Html.AntiForgeryToken()
+
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label asp-for="Name" class="form-label">Име</label>
+                                <input asp-for="Name" class="form-control" />
+                                <span asp-validation-for="Name" class="text-danger"></span>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label asp-for="Phone" class="form-label">Телефон</label>
+                                <input asp-for="Phone" class="form-control" />
+                                <span asp-validation-for="Phone" class="text-danger"></span>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label asp-for="CheckIn" class="form-label">Настаняване</label>
+                                <input asp-for="CheckIn" type="date" class="form-control" />
+                                <span asp-validation-for="CheckIn" class="text-danger"></span>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label asp-for="CheckOut" class="form-label">Напускане</label>
+                                <input asp-for="CheckOut" type="date" class="form-control" />
+                                <span asp-validation-for="CheckOut" class="text-danger"></span>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label asp-for="GuestsCount" class="form-label">Брой гости</label>
+                                <input asp-for="GuestsCount" type="number" min="1" class="form-control" />
+                                <span asp-validation-for="GuestsCount" class="text-danger"></span>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label asp-for="PreferredRoom" class="form-label">Предпочитан тип стая</label>
+                                <select asp-for="PreferredRoom" class="form-select" asp-items="ViewBag.PreferredRoomTypes">
+                                    <option value="">-- изберете тип стая --</option>
+                                </select>
+                                <span asp-validation-for="PreferredRoom" class="text-danger"></span>
+                            </div>
+
+                            <div class="col-12">
+                                <label asp-for="Message" class="form-label">Съобщение</label>
+                                <textarea asp-for="Message" class="form-control" rows="5"></textarea>
+                                <span asp-validation-for="Message" class="text-danger"></span>
+                            </div>
+
+                            <div class="col-12">
+                                <div class="d-flex flex-wrap gap-2 mt-3">
+                                    <button type="submit" class="btn btn-primary">
+                                        Изпрати запитване
+                                    </button>
+
+                                    <a asp-controller="Guest" asp-action="Availability" class="btn btn-outline-primary">
+                                        Провери наличност
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

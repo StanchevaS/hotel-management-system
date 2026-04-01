@@ -1,0 +1,74 @@
+﻿@model Hotel.Models.Room
+
+@{
+    ViewData["Title"] = "Редакция на стая";
+}
+
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="mb-0">Редакция на стая</h1>
+        <a asp-action="Index" class="btn btn-outline-secondary">Назад към стаите</a>
+    </div>
+
+    @if (!ViewData.ModelState.IsValid)
+    {
+        <div asp-validation-summary="All" class="alert alert-danger"></div>
+    }
+
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <form asp-action="Edit" method="post">
+                @Html.AntiForgeryToken()
+                <input asp-for="Id" type="hidden" />
+
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <label asp-for="Number" class="form-label">Номер на стая</label>
+                        <input asp-for="Number" class="form-control" />
+                        <span asp-validation-for="Number" class="text-danger"></span>
+                    </div>
+
+                    <div class="col-md-4">
+                        <label asp-for="Type" class="form-label">Тип стая</label>
+                        <select asp-for="Type" class="form-select" asp-items="ViewBag.RoomTypes"></select>
+                        <span asp-validation-for="Type" class="text-danger"></span>
+                    </div>
+
+                    <div class="col-md-4">
+                        <label asp-for="Status" class="form-label">Статус</label>
+                        <select asp-for="Status" class="form-select" asp-items="ViewBag.RoomStatuses"></select>
+                        <span asp-validation-for="Status" class="text-danger"></span>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label">Капацитет</label>
+                        <input class="form-control" value="Попълва се автоматично според типа стая" readonly />
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label">Цена на вечер</label>
+                        <input class="form-control" value="Попълва се автоматично според типа стая" readonly />
+                    </div>
+
+                    <div class="col-12">
+                        <div class="d-flex flex-wrap gap-2 mt-3">
+                            <button type="submit" class="btn btn-primary">
+                                Запази промените
+                            </button>
+
+                            <a asp-action="Index" class="btn btn-outline-secondary">
+                                Назад
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

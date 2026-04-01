@@ -1,0 +1,279 @@
+﻿<!DOCTYPE html>
+<html lang="bg">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - Hotel Golden Breeze</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+</head>
+<body>
+    @{
+        var isAuthenticated = User.Identity?.IsAuthenticated ?? false;
+        var isAdministrator = User.IsInRole("Administrator");
+        var isReceptionist = User.IsInRole("Receptionist");
+        var isStaff = isAdministrator || isReceptionist;
+
+        var bodyWrapperClass = "";
+
+        if (isAdministrator)
+        {
+            bodyWrapperClass = "admin-page";
+        }
+        else if (isReceptionist)
+        {
+            bodyWrapperClass = "reception-page";
+        }
+    }
+    <header>
+        @{
+            var currentController = ViewContext.RouteData.Values["controller"]?.ToString();
+            var currentAction = ViewContext.RouteData.Values["action"]?.ToString();
+        }
+
+        <nav class="navbar navbar-expand-lg navbar-light bg-white border-bottom box-shadow mb-3">
+            <div class="container">
+                <a class="navbar-brand @(currentController == "Home" && currentAction == "Index" ? "active-nav" : "")"
+                   asp-controller="Home" asp-action="Index">
+                    Hotel Golden Breeze
+                </a>
+
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNavbar"
+                        aria-controls="mainNavbar" aria-expanded="false" aria-label="Превключване на менюто">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+
+                <div class="collapse navbar-collapse" id="mainNavbar">
+                    <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                        <li class="nav-item">
+                            <a class="nav-link text-dark @(currentController == "Home" && currentAction == "Index" ? "active-nav" : "")"
+                               asp-controller="Home" asp-action="Index">
+                                Начало
+                            </a>
+                        </li>
+
+                        @if (!isStaff)
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link text-dark @(currentController == "Home" && currentAction == "About" ? "active-nav" : "")"
+                                   asp-controller="Home" asp-action="About">
+                                    За хотела
+                                </a>
+                            </li>
+
+                            <li class="nav-item">
+                                <a class="nav-link text-dark @(currentController == "Home" && currentAction == "Accommodation" ? "active-nav" : "")"
+                                   asp-controller="Home" asp-action="Accommodation">
+                                    Настаняване
+                                </a>
+                            </li>
+
+                            <li class="nav-item">
+                                <a class="nav-link text-dark @(currentController == "Guest" && currentAction == "Availability" ? "active-nav" : "")"
+                                   asp-controller="Guest" asp-action="Availability">
+                                    Наличност
+                                </a>
+                            </li>
+
+                            <li class="nav-item">
+                                <a class="nav-link text-dark @(currentController == "Inquiries" && currentAction == "Create" ? "active-nav" : "")"
+                                   asp-controller="Inquiries" asp-action="Create">
+                                    Запитване
+                                </a>
+                            </li>
+
+                            <li class="nav-item">
+                                <a class="nav-link text-dark @(currentController == "Home" && currentAction == "Rules" ? "active-nav" : "")"
+                                   asp-controller="Home" asp-action="Rules">
+                                    Правила
+                                </a>
+                            </li>
+
+                            <li class="nav-item">
+                                <a class="nav-link text-dark @(currentController == "Home" && currentAction == "Contacts" ? "active-nav" : "")"
+                                   asp-controller="Home" asp-action="Contacts">
+                                    Контакти
+                                </a>
+                            </li>
+                        }
+
+                        @if (isStaff)
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link text-dark @(currentController == "Dashboard" && currentAction == "Today" ? "active-nav" : "")"
+                                   asp-controller="Dashboard" asp-action="Today">
+                                    Днес
+                                </a>
+                            </li>
+
+                            <li class="nav-item">
+                                <a class="nav-link text-dark @(currentController == "Rooms" ? "active-nav" : "")"
+                                   asp-controller="Rooms" asp-action="Index">
+                                    Стаи
+                                </a>
+                            </li>
+
+                            <li class="nav-item">
+                                <a class="nav-link text-dark @(currentController == "Reservations" && currentAction == "Index" ? "active-nav" : "")"
+                                   asp-controller="Reservations" asp-action="Index">
+                                    Резервации
+                                </a>
+                            </li>
+
+                            <li class="nav-item">
+                                <a class="nav-link text-dark @(currentController == "Reservations" && currentAction == "Calendar" ? "active-nav" : "")"
+                                   asp-controller="Reservations" asp-action="Calendar">
+                                    График
+                                </a>
+                            </li>
+
+                            <li class="nav-item">
+                                <a class="nav-link text-dark @(currentController == "Inquiries" && currentAction != "Create" ? "active-nav" : "")"
+                                   asp-controller="Inquiries" asp-action="Index">
+                                    Запитвания
+                                </a>
+                            </li>
+                        }
+
+                        @if (isAdministrator)
+                        {
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle text-dark @(currentController == "Reports" ? "active-nav" : "")"
+                                   href="#" id="reportsDropdown" role="button"
+                                   data-bs-toggle="dropdown" aria-expanded="false">
+                                    Справки
+                                </a>
+                                <ul class="dropdown-menu" aria-labelledby="reportsDropdown">
+                                    <li>
+                                        <a class="dropdown-item @(currentController == "Reports" && currentAction == "Occupancy" ? "active-nav" : "")"
+                                           asp-controller="Reports" asp-action="Occupancy">
+                                            Заетост
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item @(currentController == "Reports" && currentAction == "Revenue" ? "active-nav" : "")"
+                                           asp-controller="Reports" asp-action="Revenue">
+                                            Приходи
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item @(currentController == "Reports" && currentAction == "PopularRoomTypes" ? "active-nav" : "")"
+                                           asp-controller="Reports" asp-action="PopularRoomTypes">
+                                            Търсени стаи
+                                        </a>
+                                    </li>
+                                </ul>
+                            </li>
+
+                            <li class="nav-item">
+                                <a class="nav-link text-dark @(currentController == "Admin" ? "active-nav" : "")"
+                                   asp-controller="Admin" asp-action="Users">
+                                    Потребители
+                                </a>
+                            </li>
+                        }
+                    </ul>
+
+                    <partial name="_LoginPartial" />
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    @if (!string.IsNullOrWhiteSpace(bodyWrapperClass))
+    {
+        <div class="@bodyWrapperClass">
+            <div class="container">
+                <main role="main" class="pb-4">
+                    @RenderBody()
+                </main>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="container">
+            <main role="main" class="pb-4">
+                @RenderBody()
+            </main>
+        </div>
+    }
+
+    @if (!isStaff)
+    {
+        <section class="guest-footer-panel">
+            <div class="container">
+                <div class="guest-footer-inner">
+                    <div class="row g-4 align-items-start">
+                        <div class="col-lg-6">
+                            <div class="guest-footer-content">
+                                <span class="guest-footer-kicker">Hotel Golden Breeze</span>
+                                <h3>Спокойствие и комфорт край морето</h3>
+                                <p>
+                                    Модерен морски хотел в к.к. Златни пясъци, съчетаващ удобна локация,
+                                    комфортни стаи и приятна атмосфера за пълноценен престой.
+                                </p>
+
+                                <div class="guest-footer-links">
+                                    <a asp-controller="Home" asp-action="About">За хотела</a>
+                                    <a asp-controller="Home" asp-action="Accommodation">Настаняване</a>
+                                    <a asp-controller="Guest" asp-action="Availability">Наличност</a>
+                                    <a asp-controller="Inquiries" asp-action="Create">Запитване</a>
+                                    <a asp-controller="Home" asp-action="Rules">Правила</a>
+                                    <a asp-controller="Home" asp-action="Contacts">Контакти</a>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-lg-6">
+                            <div class="guest-footer-contact-card">
+                                <h3>Контакти и полезна информация</h3>
+
+                                <div class="guest-footer-info-list">
+                                    <div class="guest-footer-info-row">
+                                        <span class="guest-footer-label">Телефон</span>
+                                        <span class="guest-footer-value">+359 000 000 000</span>
+                                    </div>
+
+                                    <div class="guest-footer-info-row">
+                                        <span class="guest-footer-label">Имейл</span>
+                                        <span class="guest-footer-value">info@goldenbreezehotel.com</span>
+                                    </div>
+
+                                    <div class="guest-footer-info-row">
+                                        <span class="guest-footer-label">Адрес</span>
+                                        <span class="guest-footer-value">к.к. Златни пясъци, 9007 Варна, България</span>
+                                    </div>
+
+                                    <div class="guest-footer-info-row">
+                                        <span class="guest-footer-label">Рецепция</span>
+                                        <span class="guest-footer-value">24/7</span>
+                                    </div>
+
+                                    <div class="guest-footer-info-row">
+                                        <span class="guest-footer-label">Настаняване</span>
+                                        <span class="guest-footer-value">след 14:00</span>
+                                    </div>
+
+                                    <div class="guest-footer-info-row">
+                                        <span class="guest-footer-label">Освобождаване</span>
+                                        <span class="guest-footer-value">до 11:00</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="guest-footer-bottom">
+                        <span>&copy; 2026 - Hotel Golden Breeze</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+    }
+
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

@@ -1,0 +1,69 @@
+﻿@model Hotel.Models.Room
+
+@{
+    ViewData["Title"] = "Изтриване на стая";
+}
+
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="mb-0">Изтриване на стая</h1>
+        <a asp-action="Index" class="btn btn-outline-secondary">Назад към стаите</a>
+    </div>
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger">
+            @TempData["ErrorMessage"]
+        </div>
+    }
+
+    <div class="card shadow-sm border-danger">
+        <div class="card-body">
+            <div class="alert alert-warning mb-4">
+                Сигурни ли сте, че искате да изтриете тази стая?
+            </div>
+
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <label class="form-label">Номер на стая</label>
+                    <input class="form-control" value="@Model.Number" readonly />
+                </div>
+
+                <div class="col-md-4">
+                    <label class="form-label">Тип стая</label>
+                    <input class="form-control" value="@Hotel.Helpers.RoomUiHelper.GetRoomTypeText(Model.Type)" readonly />
+                </div>
+
+                <div class="col-md-4">
+                    <label class="form-label">Статус</label>
+                    <input class="form-control" value="@Hotel.Helpers.RoomUiHelper.GetRoomStatusText(Model.Status)" readonly />
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label">Капацитет</label>
+                    <input class="form-control" value="@Model.Capacity" readonly />
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label">Цена на вечер</label>
+                    <input class="form-control" value="@Model.PricePerNight.ToString("0.00") €" readonly />
+                </div>
+            </div>
+
+            <form asp-action="DeleteConfirmed" method="post" class="mt-4">
+                @Html.AntiForgeryToken()
+                <input type="hidden" asp-for="Id" />
+
+                <div class="d-flex flex-wrap gap-2">
+                    <button type="submit" class="btn btn-danger">
+                        Изтрий стаята
+                    </button>
+
+                    <a asp-action="Index" class="btn btn-outline-secondary">
+                        Отказ
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

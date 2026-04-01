@@ -1,0 +1,123 @@
+﻿@model Hotel.Models.ReportFilter
+@using Hotel.Helpers
+
+@{
+    ViewData["Title"] = "Приходи";
+    var reservations = ViewBag.Reservations as System.Collections.IEnumerable;
+    decimal totalRevenue = ViewBag.TotalRevenue != null ? (decimal)ViewBag.TotalRevenue : 0m;
+    decimal paidRevenue = ViewBag.PaidRevenue != null ? (decimal)ViewBag.PaidRevenue : 0m;
+    decimal unpaidRevenue = ViewBag.UnpaidRevenue != null ? (decimal)ViewBag.UnpaidRevenue : 0m;
+}
+
+<div class="card-style mb-4">
+    <h1 class="page-title">Справка за приходи</h1>
+    <p class="hero-subtitle">
+        Преглед на приходите за избран период според нощувките, които попадат в него.
+    </p>
+</div>
+
+<div class="card-style mb-4">
+    <form asp-action="Revenue" method="post" class="row g-3">
+        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+        <div class="col-md-4">
+            <label asp-for="StartDate" class="form-label">Начална дата</label>
+            <input asp-for="StartDate" type="date" class="form-control" />
+            <span asp-validation-for="StartDate" class="text-danger"></span>
+        </div>
+
+        <div class="col-md-4">
+            <label asp-for="EndDate" class="form-label">Крайна дата</label>
+            <input asp-for="EndDate" type="date" class="form-control" />
+            <span asp-validation-for="EndDate" class="text-danger"></span>
+        </div>
+
+        <div class="col-md-4 d-flex align-items-end">
+            <button type="submit" class="btn btn-primary w-100">Покажи справката</button>
+        </div>
+    </form>
+</div>
+
+@if (reservations != null)
+{
+    <div class="row mb-4">
+        <div class="col-md-4 mb-3">
+            <div class="card-style text-center h-100">
+                <h3>@totalRevenue.ToString("F2") EUR</h3>
+                <p class="mb-0">Общ приход за периода</p>
+            </div>
+        </div>
+
+        <div class="col-md-4 mb-3">
+            <div class="card-style text-center h-100">
+                <h3>@paidRevenue.ToString("F2") EUR</h3>
+                <p class="mb-0">Платени резервации</p>
+            </div>
+        </div>
+
+        <div class="col-md-4 mb-3">
+            <div class="card-style text-center h-100">
+                <h3>@unpaidRevenue.ToString("F2") EUR</h3>
+                <p class="mb-0">Неплатени резервации</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="card-style">
+        <h2 class="mb-3">Детайли по резервации</h2>
+
+        <div class="table-responsive">
+            <table class="table table-hover align-middle">
+                <thead>
+                    <tr>
+                        <th>Гост</th>
+                        <th>Телефон</th>
+                        <th>Стая</th>
+                        <th>Настаняване</th>
+                        <th>Освобождаване</th>
+                        <th>Статус</th>
+                        <th>Платено</th>
+                        <th>Приход за периода</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in reservations)
+                    {
+                        var reservation = item.GetType().GetProperty("Reservation")?.GetValue(item, null) as Hotel.Models.Reservation;
+                        var periodRevenueObj = item.GetType().GetProperty("PeriodRevenue")?.GetValue(item, null);
+                        var periodRevenue = periodRevenueObj != null ? (decimal)periodRevenueObj : 0m;
+
+                        if (reservation == null)
+                        {
+                            continue;
+                        }
+
+                        <tr>
+                            <td>@reservation.GuestName</td>
+                            <td>@reservation.Phone</td>
+                            <td>@reservation.Room?.Number</td>
+                            <td>@reservation.CheckIn.ToString("dd.MM.yyyy")</td>
+                            <td>@reservation.CheckOut.ToString("dd.MM.yyyy")</td>
+                            <td>@ReservationUiHelper.GetReservationStatusText(reservation.Status)</td>
+                            <td>
+                                @if (reservation.IsPaid)
+                                {
+                                    <span class="badge bg-success">Да</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-warning text-dark">Не</span>
+                                }
+                            </td>
+                            <td>@periodRevenue.ToString("F2") EUR</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+}
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
