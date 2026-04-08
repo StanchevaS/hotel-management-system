@@ -90,37 +90,14 @@ namespace Hotel.Controllers
         [HttpGet]
         public IActionResult InquiryCreate()
         {
-            var inquiry = new Inquiry
-            {
-                CheckIn = DateTime.Today,
-                CheckOut = DateTime.Today.AddDays(1)
-            };
-
-            return View("~/Views/Inquiries/Create.cshtml", inquiry);
+            return RedirectToAction("Create", "Inquiries");
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> InquiryCreate(Inquiry inquiry)
+        public IActionResult InquiryCreate(Inquiry inquiry)
         {
-            if (inquiry.CheckOut <= inquiry.CheckIn)
-            {
-                ModelState.AddModelError(string.Empty, "Датата на напускане трябва да е след датата на настаняване.");
-            }
-
-            if (!ModelState.IsValid)
-            {
-                return View("~/Views/Inquiries/Create.cshtml", inquiry);
-            }
-
-            inquiry.Status = "Ново";
-            inquiry.CreatedOn = DateTime.Now;
-
-            _context.Inquiries.Add(inquiry);
-            await _context.SaveChangesAsync();
-
-            TempData["SuccessMessage"] = "Вашето запитване беше изпратено успешно.";
-            return RedirectToAction(nameof(InquiryCreate));
+            return RedirectToAction("Create", "Inquiries");
         }
     }
 }

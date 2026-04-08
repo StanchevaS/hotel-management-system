@@ -4,7 +4,6 @@
     ViewData["Title"] = "Заетост";
     int totalRooms = ViewBag.TotalRooms != null ? (int)ViewBag.TotalRooms : 0;
     int totalDays = ViewBag.TotalDays != null ? (int)ViewBag.TotalDays : 0;
-    int roomDays = ViewBag.RoomDays != null ? (int)ViewBag.RoomDays : 0;
     int occupiedRoomDays = ViewBag.OccupiedRoomDays != null ? (int)ViewBag.OccupiedRoomDays : 0;
     decimal occupancyPercent = ViewBag.OccupancyPercent != null ? (decimal)ViewBag.OccupancyPercent : 0m;
 }
@@ -12,7 +11,7 @@
 <div class="card-style mb-4">
     <h1 class="page-title">Справка за заетост</h1>
     <p class="hero-subtitle">
-        Преглед на заетостта на хотела за избран период на база реално заети стаенощувки.
+        Преглед на заетостта за избрания период. Стаите в ремонт не се включват в изчислението.
     </p>
 </div>
 
@@ -38,7 +37,7 @@
     </form>
 </div>
 
-@if (roomDays > 0 || occupiedRoomDays > 0 || totalRooms > 0 || totalDays > 0)
+@if (occupiedRoomDays > 0 || totalRooms > 0 || totalDays > 0)
 {
     <div class="row mb-4">
         <div class="col-md-3 mb-3">
@@ -58,7 +57,7 @@
         <div class="col-md-3 mb-3">
             <div class="card-style text-center h-100">
                 <h3>@occupiedRoomDays</h3>
-                <p class="mb-0">Заети стаенощувки</p>
+                <p class="mb-0">Заети нощувки по стаи</p>
             </div>
         </div>
 
@@ -69,49 +68,13 @@
             </div>
         </div>
     </div>
-
+}
+else if (Model?.StartDate != default && Model?.EndDate != default)
+{
     <div class="card-style">
-        <h2 class="mb-3">Детайли</h2>
-
-        <div class="table-responsive">
-            <table class="table table-hover align-middle">
-                <thead>
-                    <tr>
-                        <th>Показател</th>
-                        <th>Стойност</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td>Общ брой стаи</td>
-                        <td>@totalRooms</td>
-                    </tr>
-                    <tr>
-                        <td>Брой дни в периода</td>
-                        <td>@totalDays</td>
-                    </tr>
-                    <tr>
-                        <td>Общо възможни стаенощувки</td>
-                        <td>@roomDays</td>
-                    </tr>
-                    <tr>
-                        <td>Реално заети стаенощувки</td>
-                        <td>@occupiedRoomDays</td>
-                    </tr>
-                    <tr>
-                        <td>Процент заетост</td>
-                        <td>@occupancyPercent.ToString("F2")%</td>
-                    </tr>
-                </tbody>
-            </table>
+        <div class="alert alert-info mb-0">
+            Няма достатъчно данни за избрания период.
         </div>
-
-        @if (roomDays == 0)
-        {
-            <div class="alert alert-info mt-3 mb-0">
-                Няма достатъчно данни за избрания период.
-            </div>
-        }
     </div>
 }
 

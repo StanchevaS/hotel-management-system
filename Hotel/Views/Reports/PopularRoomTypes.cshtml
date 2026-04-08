@@ -1,4 +1,6 @@
 ﻿@using System.Linq
+@using Hotel.Enums
+@using Hotel.Helpers
 @model Hotel.Models.ReportFilter
 
 @{
@@ -56,12 +58,21 @@
                         var countObj = item.GetType().GetProperty("Count")?.GetValue(item, null);
                         var revenueObj = item.GetType().GetProperty("Revenue")?.GetValue(item, null);
 
-                        var roomType = roomTypeObj?.ToString() ?? "";
+                        RoomType? parsedRoomType = null;
+                        if (roomTypeObj != null && Enum.TryParse<RoomType>(roomTypeObj.ToString(), out var parsed))
+                        {
+                            parsedRoomType = parsed;
+                        }
+
+                        var roomTypeText = parsedRoomType.HasValue
+                        ? RoomUiHelper.GetRoomTypeText(parsedRoomType.Value)
+                        : (roomTypeObj?.ToString() ?? "");
+
                         var count = countObj != null ? (int)countObj : 0;
                         var revenue = revenueObj != null ? (decimal)revenueObj : 0m;
 
                         <tr>
-                            <td>@roomType</td>
+                            <td>@roomTypeText</td>
                             <td>@count</td>
                             <td>@revenue.ToString("F2") EUR</td>
                         </tr>

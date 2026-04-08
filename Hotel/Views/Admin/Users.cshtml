@@ -2,6 +2,7 @@
 
 @{
     ViewData["Title"] = "Потребители";
+    var currentUserId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
 }
 
 <div class="card-style">
@@ -34,19 +35,46 @@
                 {
                     @foreach (var item in Model)
                     {
+                        var isCurrentUser = item.User.Id == currentUserId;
+                        var isReceptionist = item.Roles.Contains("Receptionist");
+                        var isAdministrator = item.Roles.Contains("Administrator");
+
                         <tr>
-                            <td>@item.User.Email</td>
+                            <td>
+                                @item.User.Email
+                                @if (isCurrentUser)
+                                {
+                                    <span class="badge bg-secondary ms-2">Ваш профил</span>
+                                }
+                            </td>
                             <td>@string.Join(", ", item.Roles)</td>
                             <td>
-                                <form asp-action="DeleteUser" method="post" class="d-inline">
-                                    @Html.AntiForgeryToken()
-                                    <input type="hidden" name="id" value="@item.User.Id" />
-                                    <button type="submit"
-                                            class="btn btn-sm btn-danger"
-                                            onclick="return confirm('Сигурни ли сте, че искате да изтриете този потребител?');">
-                                        Изтрий
-                                    </button>
-                                </form>
+                                <a asp-action="EditUser"
+                                   asp-route-id="@item.User.Id"
+                                   class="btn btn-sm btn-warning me-1">
+                                    Редактирай
+                                </a>
+
+                                @if (isReceptionist)
+                                {
+                                    <form asp-action="DeleteUser" method="post" class="d-inline">
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="id" value="@item.User.Id" />
+                                        <button type="submit"
+                                                class="btn btn-sm btn-danger"
+                                                onclick="return confirm('Сигурни ли сте, че искате да изтриете този потребител?');">
+                                            Изтрий
+                                        </button>
+                                    </form>
+                                }
+                                else if (isCurrentUser && isAdministrator)
+                                {
+                                    <span class="text-muted small">Собственият администраторски профил не може да се изтрие.</span>
+                                }
+                                else
+                                {
+                                    <span class="text-muted small">Администраторски профил не се изтрива.</span>
+                                }
                             </td>
                         </tr>
                     }

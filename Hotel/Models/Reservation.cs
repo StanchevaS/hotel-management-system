@@ -1,6 +1,5 @@
 ﻿using Hotel.Enums;
 using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Hotel.Models
 {
@@ -8,12 +7,13 @@ namespace Hotel.Models
     {
         public int Id { get; set; }
 
-        [Required]
-        [Display(Name = "Име на гост")]
+        [Required(ErrorMessage = "Името на госта е задължително.")]
+        [StringLength(100, ErrorMessage = "Името на госта не може да бъде по-дълго от 100 символа.")]
         public string GuestName { get; set; } = string.Empty;
 
-        [Required]
-        [Display(Name = "Телефон")]
+        [Required(ErrorMessage = "Телефонът е задължителен.")]
+        [StringLength(30, ErrorMessage = "Телефонният номер не може да бъде по-дълъг от 30 символа.")]
+        [RegularExpression(@"^[0-9+\-\s()]+$", ErrorMessage = "Телефонният номер може да съдържа само цифри, интервали, +, - и скоби.")]
         public string Phone { get; set; } = string.Empty;
 
         [DataType(DataType.Date)]
@@ -24,23 +24,20 @@ namespace Hotel.Models
         [Display(Name = "Напускане")]
         public DateTime CheckOut { get; set; }
 
-        [Range(1, 20)]
-        [Display(Name = "Брой гости")]
+        [Range(1, 20, ErrorMessage = "Броят гости трябва да бъде между 1 и 20.")]
         public int GuestsCount { get; set; }
 
-        [Display(Name = "Платено")]
         public bool IsPaid { get; set; }
 
-        [Column(TypeName = "decimal(18,2)")]
-        [Display(Name = "Обща сума")]
+        [Range(0, 9999999.99, ErrorMessage = "Сумата трябва да бъде положителна.")]
         public decimal TotalAmount { get; set; }
 
-        [Display(Name = "Статус")]
-        public ReservationStatus Status { get; set; } = ReservationStatus.Pending;
-
-        [Display(Name = "Стая")]
-        public int RoomId { get; set; }
+        [Required(ErrorMessage = "Моля, изберете стая.")]
+        public int? RoomId { get; set; }
 
         public Room? Room { get; set; }
+
+        [Required(ErrorMessage = "Статусът е задължителен.")]
+        public ReservationStatus Status { get; set; }
     }
 }

@@ -5,7 +5,6 @@
         Available = 0,
         Reserved = 1,
         Occupied = 2,
-        Cleaning = 3,
-        Maintenance = 4
+        Maintenance = 3
     }
 }

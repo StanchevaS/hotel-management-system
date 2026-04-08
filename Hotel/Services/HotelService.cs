@@ -100,6 +100,11 @@ namespace Hotel.Services
                 return false;
             }
 
+            if (room.Status == RoomStatus.Maintenance)
+            {
+                return false;
+            }
+
             var today = DateTime.Today;
 
             var reservation = await _context.Reservations
@@ -168,25 +173,7 @@ namespace Hotel.Services
 
             if (reservation == null)
             {
-                var checkedInReservation = await _context.Reservations
-                    .Where(r =>
-                        r.RoomId == roomId &&
-                        r.Status == ReservationStatus.CheckedIn &&
-                        r.CheckIn.Date <= today &&
-                        r.CheckOut.Date > today)
-                    .OrderByDescending(r => r.CheckIn)
-                    .FirstOrDefaultAsync();
-
-                if (checkedInReservation == null)
-                {
-                    return false;
-                }
-
-                checkedInReservation.Status = ReservationStatus.Cancelled;
-                await _context.SaveChangesAsync();
-
-                await RecalculateRoomStatusAsync(roomId);
-                return true;
+                return false;
             }
 
             reservation.Status = ReservationStatus.Cancelled;
@@ -236,7 +223,7 @@ namespace Hotel.Services
                 return;
             }
 
-            if (room.Status == RoomStatus.Maintenance || room.Status == RoomStatus.Cleaning)
+            if (room.Status == RoomStatus.Maintenance)
             {
                 return;
             }

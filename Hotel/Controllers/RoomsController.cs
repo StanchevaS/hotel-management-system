@@ -150,6 +150,11 @@ namespace Hotel.Controllers
 
             await _context.SaveChangesAsync();
 
+            if (existingRoom.Status != RoomStatus.Maintenance)
+            {
+                await _hotelService.RecalculateRoomStatusAsync(existingRoom.Id);
+            }
+
             TempData["SuccessMessage"] = "Стаята е редактирана успешно.";
             return RedirectToAction(nameof(Index));
         }

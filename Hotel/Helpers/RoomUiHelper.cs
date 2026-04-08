@@ -11,7 +11,6 @@ namespace Hotel.Helpers
                 RoomStatus.Available => "Свободна",
                 RoomStatus.Reserved => "Резервирана",
                 RoomStatus.Occupied => "Заета",
-                RoomStatus.Cleaning => "Почистване",
                 RoomStatus.Maintenance => "Ремонт",
                 _ => status.ToString()
             };
@@ -24,7 +23,6 @@ namespace Hotel.Helpers
                 RoomStatus.Available => "badge bg-success",
                 RoomStatus.Reserved => "badge bg-warning text-dark",
                 RoomStatus.Occupied => "badge bg-danger",
-                RoomStatus.Cleaning => "badge bg-info text-dark",
                 RoomStatus.Maintenance => "badge bg-secondary",
                 _ => "badge bg-dark"
             };

@@ -60,10 +60,17 @@ namespace Hotel.Controllers
             var start = filter.StartDate!.Value.Date;
             var endExclusive = filter.EndDate!.Value.Date.AddDays(1);
 
-            var totalRooms = await _context.Rooms.CountAsync();
+            var allowedRoomIds = await _context.Rooms
+                .Where(r => r.Status != RoomStatus.Maintenance)
+                .Select(r => r.Id)
+                .ToListAsync();
+
+            var totalRooms = allowedRoomIds.Count;
 
             var occupiedReservations = await _context.Reservations
                 .Where(r =>
+                    r.RoomId.HasValue &&
+                    allowedRoomIds.Contains(r.RoomId.Value) &&
                     r.Status != ReservationStatus.Cancelled &&
                     r.CheckIn < endExclusive &&
                     r.CheckOut > start)
@@ -118,6 +125,8 @@ namespace Hotel.Controllers
             var reservations = await _context.Reservations
                 .Include(r => r.Room)
                 .Where(r =>
+                    r.RoomId.HasValue &&
+                    r.Room != null &&
                     r.Status != ReservationStatus.Cancelled &&
                     r.CheckIn < endExclusive &&
                     r.CheckOut > start)
@@ -190,6 +199,7 @@ namespace Hotel.Controllers
             var reservations = await _context.Reservations
                 .Include(r => r.Room)
                 .Where(r =>
+                    r.RoomId.HasValue &&
                     r.Room != null &&
                     r.Status != ReservationStatus.Cancelled &&
                     r.CheckIn < endExclusive &&

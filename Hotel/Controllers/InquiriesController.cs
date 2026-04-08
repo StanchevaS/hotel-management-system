@@ -161,9 +161,21 @@ namespace Hotel.Controllers
 
         private void ValidateInquiryDates(Inquiry inquiry)
         {
+            var today = DateTime.Today;
+            var oneMonthBack = today.AddMonths(-1);
+
             if (inquiry.CheckOut <= inquiry.CheckIn)
             {
                 ModelState.AddModelError(string.Empty, "Датата на напускане трябва да е след датата на настаняване.");
+            }
+
+            if (inquiry.CheckOut.Date < today)
+            {
+                if (inquiry.CheckIn.Date < oneMonthBack || inquiry.CheckOut.Date < oneMonthBack)
+                {
+                    ModelState.AddModelError(string.Empty,
+                        "Не може да се създава или редактира изцяло минало запитване, ако датите са по-стари от 1 месец назад.");
+                }
             }
         }
     }

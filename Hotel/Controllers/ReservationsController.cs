@@ -213,11 +213,19 @@ namespace Hotel.Controllers
                 return View(reservation);
             }
 
-            var room = await _context.Rooms.FirstOrDefaultAsync(r => r.Id == reservation.RoomId);
+            var selectedRoomId = reservation.RoomId!.Value;
+
+            var room = await _context.Rooms.FirstOrDefaultAsync(r => r.Id == selectedRoomId);
 
             if (room == null)
             {
                 ModelState.AddModelError(string.Empty, "Избраната стая не съществува.");
+                return View(reservation);
+            }
+
+            if (room.Status == RoomStatus.Maintenance)
+            {
+                ModelState.AddModelError(string.Empty, "Стая, която е в ремонт, не може да бъде резервирана.");
                 return View(reservation);
             }
 
@@ -228,7 +236,7 @@ namespace Hotel.Controllers
             }
 
             bool isAvailable = await _hotelService.IsRoomAvailableAsync(
-                reservation.RoomId,
+                selectedRoomId,
                 reservation.CheckIn,
                 reservation.CheckOut);
 
@@ -300,11 +308,18 @@ namespace Hotel.Controllers
             }
 
             var oldRoomId = existingReservation.RoomId;
+            var selectedRoomId = reservation.RoomId!.Value;
 
-            var newRoom = await _context.Rooms.FirstOrDefaultAsync(r => r.Id == reservation.RoomId);
+            var newRoom = await _context.Rooms.FirstOrDefaultAsync(r => r.Id == selectedRoomId);
             if (newRoom == null)
             {
                 ModelState.AddModelError(string.Empty, "Избраната стая не съществува.");
+                return View(reservation);
+            }
+
+            if (newRoom.Status == RoomStatus.Maintenance)
+            {
+                ModelState.AddModelError(string.Empty, "Стая, която е в ремонт, не може да бъде резервирана.");
                 return View(reservation);
             }
 
@@ -315,7 +330,7 @@ namespace Hotel.Controllers
             }
 
             bool isAvailable = await _hotelService.IsRoomAvailableAsync(
-                reservation.RoomId,
+                selectedRoomId,
                 reservation.CheckIn,
                 reservation.CheckOut,
                 reservation.Id);
@@ -324,6 +339,11 @@ namespace Hotel.Controllers
             {
                 ModelState.AddModelError(string.Empty, "Стаята е вече заета за избрания период.");
                 return View(reservation);
+            }
+
+            if (reservation.Status == ReservationStatus.CheckedOut && !reservation.IsPaid)
+            {
+                ModelState.AddModelError(string.Empty, "Гостът не може да напусне хотела, преди резервацията да е маркирана като платена.");
             }
 
             if (!ModelState.IsValid)
@@ -336,7 +356,7 @@ namespace Hotel.Controllers
             existingReservation.CheckIn = reservation.CheckIn;
             existingReservation.CheckOut = reservation.CheckOut;
             existingReservation.GuestsCount = reservation.GuestsCount;
-            existingReservation.RoomId = reservation.RoomId;
+            existingReservation.RoomId = selectedRoomId;
             existingReservation.Status = reservation.Status;
             existingReservation.IsPaid = reservation.IsPaid;
             existingReservation.TotalAmount = _hotelService.CalculateTotalAmount(
@@ -346,11 +366,11 @@ namespace Hotel.Controllers
 
             await _context.SaveChangesAsync();
 
-            await _hotelService.RecalculateRoomStatusAsync(existingReservation.RoomId);
+            await _hotelService.RecalculateRoomStatusAsync(existingReservation.RoomId.Value);
 
             if (oldRoomId != existingReservation.RoomId)
             {
-                await _hotelService.RecalculateRoomStatusAsync(oldRoomId);
+                await _hotelService.RecalculateRoomStatusAsync(oldRoomId.Value);
             }
 
             TempData["SuccessMessage"] = "Резервацията е редактирана успешно.";
@@ -387,7 +407,7 @@ namespace Hotel.Controllers
 
             reservation.Status = ReservationStatus.Cancelled;
             await _context.SaveChangesAsync();
-            await _hotelService.RecalculateRoomStatusAsync(reservation.RoomId);
+            await _hotelService.RecalculateRoomStatusAsync(reservation.RoomId!.Value);
 
             TempData["SuccessMessage"] = "Резервацията е отказана успешно.";
             return RedirectToAction(nameof(Index));
@@ -421,7 +441,7 @@ namespace Hotel.Controllers
                 return RedirectToAction(nameof(Index));
             }
 
-            var roomId = reservation.RoomId;
+            var roomId = reservation.RoomId!.Value;
 
             _context.Reservations.Remove(reservation);
             await _context.SaveChangesAsync();
@@ -455,10 +475,10 @@ namespace Hotel.Controllers
             var allRooms = await roomsQuery.ToListAsync();
 
             ViewBag.RoomList = allRooms
-                .Select(r => new Microsoft.AspNetCore.Mvc.Rendering.SelectListItem
+                .Select(r => new SelectListItem
                 {
                     Value = r.Id.ToString(),
-                    Text = $"{r.Number} - {Hotel.Helpers.RoomUiHelper.GetRoomTypeText(r.Type)}",
+                    Text = $"{r.Number} - {RoomUiHelper.GetRoomTypeText(r.Type)}",
                     Selected = roomId.HasValue && r.Id == roomId.Value
                 })
                 .ToList();
@@ -491,9 +511,18 @@ namespace Hotel.Controllers
 
             return View(reservations);
         }
+
         private void LoadReservationLists(List<Room> rooms, int? selectedRoomId, ReservationStatus selectedStatus)
         {
-            ViewBag.RoomList = new SelectList(rooms, "Id", "Number", selectedRoomId);
+            ViewBag.RoomList = rooms
+                .Select(r => new SelectListItem
+                {
+                    Value = r.Id.ToString(),
+                    Text = $"{r.Number} - {RoomUiHelper.GetRoomTypeText(r.Type)}",
+                    Selected = selectedRoomId.HasValue && r.Id == selectedRoomId.Value
+                })
+                .ToList();
+
             ViewBag.ReservationStatuses = EnumSelectListHelper.CreateSelectList<ReservationStatus>(
                 ReservationUiHelper.GetReservationStatusText, selectedStatus);
         }
@@ -506,9 +535,21 @@ namespace Hotel.Controllers
 
         private void ValidateReservationDates(Reservation reservation)
         {
+            var today = DateTime.Today;
+            var oneMonthBack = today.AddMonths(-1);
+
             if (reservation.CheckOut <= reservation.CheckIn)
             {
                 ModelState.AddModelError(string.Empty, "Датата на напускане трябва да е след датата на настаняване.");
+            }
+
+            if (reservation.CheckOut.Date < today)
+            {
+                if (reservation.CheckIn.Date < oneMonthBack || reservation.CheckOut.Date < oneMonthBack)
+                {
+                    ModelState.AddModelError(string.Empty,
+                        "Не може да се създава или редактира изцяло минала резервация, ако датите са по-стари от 1 месец назад.");
+                }
             }
         }
     }

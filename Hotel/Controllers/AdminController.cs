@@ -107,6 +107,102 @@ namespace Hotel.Controllers
             return RedirectToAction(nameof(Users));
         }
 
+        [HttpGet]
+        public async Task<IActionResult> EditUser(string id)
+        {
+            if (string.IsNullOrWhiteSpace(id))
+            {
+                TempData["ErrorMessage"] = "Невалиден потребител.";
+                return RedirectToAction(nameof(Users));
+            }
+
+            var user = await _userManager.FindByIdAsync(id);
+
+            if (user == null)
+            {
+                TempData["ErrorMessage"] = "Потребителят не е намерен.";
+                return RedirectToAction(nameof(Users));
+            }
+
+            var roles = await _userManager.GetRolesAsync(user);
+            ViewBag.UserRoles = roles;
+            ViewBag.IsCurrentUser = user.Id == _userManager.GetUserId(User);
+
+            return View(user);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> EditUser(string id, string email, string? newPassword)
+        {
+            if (string.IsNullOrWhiteSpace(id))
+            {
+                TempData["ErrorMessage"] = "Невалиден потребител.";
+                return RedirectToAction(nameof(Users));
+            }
+
+            var user = await _userManager.FindByIdAsync(id);
+
+            if (user == null)
+            {
+                TempData["ErrorMessage"] = "Потребителят не е намерен.";
+                return RedirectToAction(nameof(Users));
+            }
+
+            var roles = await _userManager.GetRolesAsync(user);
+            ViewBag.UserRoles = roles;
+            ViewBag.IsCurrentUser = user.Id == _userManager.GetUserId(User);
+
+            if (string.IsNullOrWhiteSpace(email))
+            {
+                ModelState.AddModelError(string.Empty, "Имейлът е задължителен.");
+                return View(user);
+            }
+
+            email = email.Trim();
+
+            var existingUserWithEmail = await _userManager.FindByEmailAsync(email);
+            if (existingUserWithEmail != null && existingUserWithEmail.Id != user.Id)
+            {
+                ModelState.AddModelError(string.Empty, "Вече съществува друг потребител с този имейл.");
+                return View(user);
+            }
+
+            user.Email = email;
+            user.UserName = email;
+
+            var updateResult = await _userManager.UpdateAsync(user);
+
+            if (!updateResult.Succeeded)
+            {
+                foreach (var error in updateResult.Errors)
+                {
+                    ModelState.AddModelError(string.Empty, error.Description);
+                }
+
+                return View(user);
+            }
+
+            if (!string.IsNullOrWhiteSpace(newPassword))
+            {
+                var token = await _userManager.GeneratePasswordResetTokenAsync(user);
+                var resetResult = await _userManager.ResetPasswordAsync(user, token, newPassword);
+
+                if (!resetResult.Succeeded)
+                {
+                    foreach (var error in resetResult.Errors)
+                    {
+                        ModelState.AddModelError(string.Empty, error.Description);
+                    }
+
+                    return View(user);
+                }
+            }
+
+            TempData["SuccessMessage"] = "Профилът е редактиран успешно.";
+            return RedirectToAction(nameof(Users));
+        }
+
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteUser(string id)
@@ -122,6 +218,20 @@ namespace Hotel.Controllers
             if (user == null)
             {
                 TempData["ErrorMessage"] = "Потребителят не е намерен.";
+                return RedirectToAction(nameof(Users));
+            }
+
+            var currentUserId = _userManager.GetUserId(User);
+            if (user.Id == currentUserId)
+            {
+                TempData["ErrorMessage"] = "Администраторът не може да изтрие собствения си профил.";
+                return RedirectToAction(nameof(Users));
+            }
+
+            var roles = await _userManager.GetRolesAsync(user);
+            if (!roles.Contains("Receptionist"))
+            {
+                TempData["ErrorMessage"] = "Може да се изтрива само потребител с роля Receptionist.";
                 return RedirectToAction(nameof(Users));
             }
 

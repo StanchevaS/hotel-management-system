@@ -1,154 +1,232 @@
 ﻿@model IEnumerable<Hotel.Models.Room>
-@using Hotel.Enums
-@using Hotel.Helpers
 
 @{
-    ViewData["Title"] = "Стаи в хотела";
+    ViewData["Title"] = "Стаи";
+    bool isAdministrator = User.IsInRole("Administrator");
 }
 
 <div class="container py-4">
-    <div class="card shadow-sm rounded-4 border-0 p-4">
-        <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
-            <h1 class="mb-0">Стаи в хотела</h1>
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+        <h1 class="mb-0">Стаи</h1>
 
-            @if (User.IsInRole("Administrator"))
-            {
-                <a asp-action="Create" class="btn btn-primary btn-lg rounded-4">
-                    Добави нова стая
-                </a>
-            }
+        @if (isAdministrator)
+        {
+            <a asp-action="Create" class="btn btn-primary">Добави стая</a>
+        }
+    </div>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success">
+            @TempData["SuccessMessage"]
         </div>
+    }
 
-        @if (TempData["SuccessMessage"] != null)
-        {
-            <div class="alert alert-success">
-                @TempData["SuccessMessage"]
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger">
+            @TempData["ErrorMessage"]
+        </div>
+    }
+
+    <div class="card shadow-sm mb-3">
+        <div class="card-body">
+            <div class="row g-3 align-items-end">
+                <div class="col-md-4">
+                    <label for="roomSearch" class="form-label">Търси по номер</label>
+                    <input type="text" id="roomSearch" class="form-control" placeholder="Например 101" />
+                </div>
+
+                <div class="col-md-4">
+                    <label for="typeFilter" class="form-label">Филтър по тип</label>
+                    <select id="typeFilter" class="form-select">
+                        <option value="">Всички типове</option>
+                        @if (Model != null)
+                        {
+                            foreach (var type in Model
+                            .Select(r => Hotel.Helpers.RoomUiHelper.GetRoomTypeText(r.Type))
+                            .Distinct()
+                            .OrderBy(x => x))
+                            {
+                                <option value="@type">@type</option>
+                            }
+                        }
+                    </select>
+                </div>
+
+                <div class="col-md-4">
+                    <label for="statusFilter" class="form-label">Филтър по статус</label>
+                    <select id="statusFilter" class="form-select">
+                        <option value="">Всички статуси</option>
+                        @if (Model != null)
+                        {
+                            foreach (var status in Model
+                            .Select(r => Hotel.Helpers.RoomUiHelper.GetRoomStatusText(r.Status))
+                            .Distinct()
+                            .OrderBy(x => x))
+                            {
+                                <option value="@status">@status</option>
+                            }
+                        }
+                    </select>
+                </div>
+
+                <div class="col-12">
+                    <button type="button" id="clearFilters" class="btn btn-outline-secondary btn-sm">
+                        Изчисти филтрите
+                    </button>
+                </div>
             </div>
-        }
+        </div>
+    </div>
 
-        @if (TempData["ErrorMessage"] != null)
-        {
-            <div class="alert alert-danger">
-                @TempData["ErrorMessage"]
-            </div>
-        }
-
-        <form method="get" asp-action="Index" class="row g-3 align-items-end mb-4">
-            <div class="col-md-3">
-                <label class="form-label">Номер на стая</label>
-                <input type="text"
-                       name="searchNumber"
-                       value="@ViewBag.SearchNumber"
-                       class="form-control"
-                       placeholder="Пример: 101" />
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+                <div class="text-muted">
+                    Показани стаи: <strong id="visibleRoomsCount">0</strong>
+                </div>
             </div>
 
-            <div class="col-md-2">
-                <label class="form-label">Тип стая</label>
-                <select name="typeFilter" class="form-select" asp-items="ViewBag.RoomTypes">
-                    <option value="">-- Всички --</option>
-                </select>
-            </div>
+            <div class="table-responsive">
+                <table class="table table-striped align-middle" id="roomsTable">
+                    <thead>
+                        <tr>
+                            <th>Номер</th>
+                            <th>Тип</th>
+                            <th>Статус</th>
+                            <th>Капацитет</th>
+                            <th>Цена на вечер</th>
+                            @if (isAdministrator)
+                            {
+                                <th>Управление</th>
+                            }
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model != null && Model.Any())
+                        {
+                            @foreach (var room in Model)
+                            {
+                                var roomTypeText = Hotel.Helpers.RoomUiHelper.GetRoomTypeText(room.Type);
+                                var roomStatusText = Hotel.Helpers.RoomUiHelper.GetRoomStatusText(room.Status);
 
-            <div class="col-md-2">
-                <label class="form-label">Статус</label>
-                <select name="statusFilter" class="form-select" asp-items="ViewBag.RoomStatuses">
-                    <option value="">-- Всички --</option>
-                </select>
-            </div>
+                                <tr class="room-row"
+                                    data-room-number="@room.Number"
+                                    data-room-type="@roomTypeText"
+                                    data-room-status="@roomStatusText">
+                                    <td>@room.Number</td>
+                                    <td>@roomTypeText</td>
+                                    <td>@roomStatusText</td>
+                                    <td>@room.Capacity</td>
+                                    <td>@room.PricePerNight.ToString("0.00")</td>
 
-            <div class="col-md-2">
-                <label class="form-label">Сортиране</label>
-                <select name="sortOrder" class="form-select">
-                    <option value="" selected="@(ViewBag.SortOrder == null)">Номер ↑</option>
-                    <option value="number_desc" selected="@(ViewBag.SortOrder == "number_desc")">Номер ↓</option>
-                    <option value="price_asc" selected="@(ViewBag.SortOrder == "price_asc")">Цена ↑</option>
-                    <option value="price_desc" selected="@(ViewBag.SortOrder == "price_desc")">Цена ↓</option>
-                    <option value="status_asc" selected="@(ViewBag.SortOrder == "status_asc")">Статус ↑</option>
-                    <option value="status_desc" selected="@(ViewBag.SortOrder == "status_desc")">Статус ↓</option>
-                </select>
-            </div>
-
-            <div class="col-md-3 d-flex gap-2">
-                <button type="submit" class="btn btn-primary">Приложи</button>
-                <a asp-action="Index" class="btn btn-secondary">Изчисти</a>
-            </div>
-        </form>
-
-        <div class="table-responsive">
-            <table class="table align-middle">
-                <thead>
-                    <tr>
-                        <th>Номер</th>
-                        <th>Тип стая</th>
-                        <th>Капацитет</th>
-                        <th>Цена на нощувка</th>
-                        <th>Статус</th>
-                        <th>Резервация</th>
-                        <th>Управление</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @if (Model != null && Model.Any())
-                    {
-                        foreach (var room in Model)
+                                    @if (isAdministrator)
+                                    {
+                                        <td>
+                                            <div class="d-flex gap-2 flex-wrap">
+                                                <a asp-action="Edit" asp-route-id="@room.Id" class="btn btn-sm btn-warning">
+                                                    Редактирай
+                                                </a>
+                                                <a asp-action="Delete" asp-route-id="@room.Id" class="btn btn-sm btn-danger">
+                                                    Изтрий
+                                                </a>
+                                            </div>
+                                        </td>
+                                    }
+                                </tr>
+                            }
+                        }
+                        else
                         {
                             <tr>
-                                <td>@room.Number</td>
-                                <td>@RoomUiHelper.GetRoomTypeText(room.Type)</td>
-                                <td>@room.Capacity гости</td>
-                                <td>@room.PricePerNight.ToString("0.00") €</td>
-                                <td>
-                                    <span class="@RoomUiHelper.GetRoomStatusClass(room.Status)">
-                                        @RoomUiHelper.GetRoomStatusText(room.Status)
-                                    </span>
-                                </td>
-                                <td>
-                                    @if (room.Status == RoomStatus.Available)
-                                    {
-                                        <a asp-controller="Reservations"
-                                           asp-action="Create"
-                                           asp-route-roomId="@room.Id"
-                                           class="btn btn-sm btn-primary rounded-4">
-                                            Резервирай
-                                        </a>
-                                    }
-                                    else
-                                    {
-                                        <span class="text-muted">—</span>
-                                    }
-                                </td>
-                                <td>
-                                    <div class="d-flex flex-wrap gap-2">
-                                        @if (User.IsInRole("Administrator"))
-                                        {
-                                            <a asp-action="Edit" asp-route-id="@room.Id" class="btn btn-sm btn-warning rounded-4">
-                                                Редакция
-                                            </a>
-
-                                            <a asp-action="Delete" asp-route-id="@room.Id" class="btn btn-sm btn-danger rounded-4">
-                                                Изтрий
-                                            </a>
-                                        }
-                                        else
-                                        {
-                                            <span class="text-muted">Няма достъп</span>
-                                        }
-                                    </div>
+                                <td colspan="@(isAdministrator ? 6 : 5)" class="text-center text-muted">
+                                    Няма добавени стаи.
                                 </td>
                             </tr>
                         }
-                    }
-                    else
-                    {
-                        <tr>
-                            <td colspan="7" class="text-center text-muted py-4">
-                                Няма намерени стаи.
-                            </td>
-                        </tr>
-                    }
-                </tbody>
-            </table>
+                    </tbody>
+                </table>
+            </div>
+
+            <div id="noRoomsMessage" class="alert alert-warning mt-3 d-none">
+                Няма стаи, които да отговарят на избраните филтри.
+            </div>
         </div>
     </div>
 </div>
+
+@section Scripts {
+    <script>
+        (function () {
+            const roomSearch = document.getElementById('roomSearch');
+            const typeFilter = document.getElementById('typeFilter');
+            const statusFilter = document.getElementById('statusFilter');
+            const clearFiltersButton = document.getElementById('clearFilters');
+            const rows = Array.from(document.querySelectorAll('.room-row'));
+            const visibleRoomsCount = document.getElementById('visibleRoomsCount');
+            const noRoomsMessage = document.getElementById('noRoomsMessage');
+
+            function normalize(value) {
+                return (value || '').toString().trim().toLowerCase();
+            }
+
+            function applyFilters() {
+                const searchValue = normalize(roomSearch?.value);
+                const selectedType = normalize(typeFilter?.value);
+                const selectedStatus = normalize(statusFilter?.value);
+
+                let visibleCount = 0;
+
+                rows.forEach(row => {
+                    const roomNumber = normalize(row.dataset.roomNumber);
+                    const roomType = normalize(row.dataset.roomType);
+                    const roomStatus = normalize(row.dataset.roomStatus);
+
+                    const matchesSearch = !searchValue || roomNumber.includes(searchValue);
+                    const matchesType = !selectedType || roomType === selectedType;
+                    const matchesStatus = !selectedStatus || roomStatus === selectedStatus;
+
+                    const shouldShow = matchesSearch && matchesType && matchesStatus;
+
+                    row.style.display = shouldShow ? '' : 'none';
+
+                    if (shouldShow) {
+                        visibleCount++;
+                    }
+                });
+
+                if (visibleRoomsCount) {
+                    visibleRoomsCount.textContent = visibleCount.toString();
+                }
+
+                if (noRoomsMessage) {
+                    noRoomsMessage.classList.toggle('d-none', visibleCount > 0 || rows.length === 0);
+                }
+            }
+
+            if (roomSearch) {
+                roomSearch.addEventListener('input', applyFilters);
+            }
+
+            if (typeFilter) {
+                typeFilter.addEventListener('change', applyFilters);
+            }
+
+            if (statusFilter) {
+                statusFilter.addEventListener('change', applyFilters);
+            }
+
+            if (clearFiltersButton) {
+                clearFiltersButton.addEventListener('click', function () {
+                    if (roomSearch) roomSearch.value = '';
+                    if (typeFilter) typeFilter.value = '';
+                    if (statusFilter) statusFilter.value = '';
+                    applyFilters();
+                });
+            }
+
+            applyFilters();
+        })();
+    </script>
+}

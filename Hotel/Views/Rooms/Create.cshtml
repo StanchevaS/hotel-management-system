@@ -21,22 +21,24 @@
                 @Html.AntiForgeryToken()
 
                 <div class="row g-3">
-                    <div class="col-md-4">
+                    <div class="col-md-6">
                         <label asp-for="Number" class="form-label">Номер на стая</label>
                         <input asp-for="Number" class="form-control" />
                         <span asp-validation-for="Number" class="text-danger"></span>
                     </div>
 
-                    <div class="col-md-4">
+                    <div class="col-md-6">
                         <label asp-for="Type" class="form-label">Тип стая</label>
                         <select asp-for="Type" class="form-select" asp-items="ViewBag.RoomTypes"></select>
                         <span asp-validation-for="Type" class="text-danger"></span>
                     </div>
 
-                    <div class="col-md-4">
-                        <label asp-for="Status" class="form-label">Статус</label>
-                        <select asp-for="Status" class="form-select" asp-items="ViewBag.RoomStatuses"></select>
-                        <span asp-validation-for="Status" class="text-danger"></span>
+                    <div class="col-md-6">
+                        <label class="form-label">Статус</label>
+                        <input class="form-control" value="Свободна (задава се автоматично)" readonly />
+                        <div class="form-text">
+                            При създаване всяка нова стая се записва автоматично като свободна.
+                        </div>
                     </div>
 
                     <div class="col-md-6">

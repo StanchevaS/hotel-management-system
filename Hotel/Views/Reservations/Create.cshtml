@@ -1,10 +1,14 @@
-﻿@model Hotel.Models.Reservation
+﻿@using System.Linq
+@using Microsoft.AspNetCore.Mvc.Rendering
+@model Hotel.Models.Reservation
 
 @{
     ViewData["Title"] = "Нова резервация";
     var inquiryId = ViewBag.InquiryId as int?;
     var preferredRoomNumber = ViewBag.PreferredRoomNumber as string;
     bool hasSearchedRooms = ViewBag.HasSearchedRooms != null && (bool)ViewBag.HasSearchedRooms;
+    var roomList = ViewBag.RoomList as IEnumerable<SelectListItem>;
+    bool hasAvailableRooms = roomList != null && roomList.Any();
 }
 
 <div class="container py-4">
@@ -42,8 +46,15 @@
 
                     <div class="col-md-6">
                         <label asp-for="Phone" class="form-label">Телефон</label>
-                        <input asp-for="Phone" class="form-control" />
+                        <input asp-for="Phone"
+                               class="form-control"
+                               inputmode="tel"
+                               pattern="[0-9+\-\s()]+"
+                               title="Телефонният номер може да съдържа само цифри, интервали, +, - и скоби." />
                         <span asp-validation-for="Phone" class="text-danger"></span>
+                        <div class="form-text">
+                            Пример: 0888123456, +359888123456, +359 888 123 456, (084) 123-456
+                        </div>
                     </div>
 
                     <div class="col-md-3">
@@ -56,6 +67,13 @@
                         <label asp-for="CheckOut" class="form-label">Напускане</label>
                         <input asp-for="CheckOut" type="date" class="form-control" />
                         <span asp-validation-for="CheckOut" class="text-danger"></span>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="form-text mt-2">
+                            Може да се въвежда изцяло минала резервация само до <strong>1 месец назад</strong>.
+                            По-стари минали резервации не са позволени.
+                        </div>
                     </div>
 
                     <div class="col-md-2">
@@ -73,7 +91,14 @@
                     <div class="col-md-8">
                         <label asp-for="RoomId" class="form-label">Стая</label>
                         <select asp-for="RoomId" class="form-select" asp-items="ViewBag.RoomList">
-                            <option value="">-- изберете стая --</option>
+                            @if (hasSearchedRooms && !hasAvailableRooms)
+                            {
+                                <option value="">-- няма свободни стаи за съответния период --</option>
+                            }
+                            else
+                            {
+                                <option value="">-- изберете стая --</option>
+                            }
                         </select>
                         <span asp-validation-for="RoomId" class="text-danger"></span>
 
@@ -86,9 +111,18 @@
 
                         @if (hasSearchedRooms)
                         {
-                            <div class="form-text">
-                                Показани са свободните стаи за избрания период.
-                            </div>
+                            @if (hasAvailableRooms)
+                            {
+                                <div class="form-text">
+                                    Показани са свободните стаи за избрания период.
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="form-text text-danger">
+                                    Няма свободни стаи за съответния период.
+                                </div>
+                            }
                         }
                     </div>
 

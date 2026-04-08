@@ -38,8 +38,15 @@
 
                             <div class="col-md-6">
                                 <label asp-for="Phone" class="form-label">Телефон</label>
-                                <input asp-for="Phone" class="form-control" />
+                                <input asp-for="Phone"
+                                       class="form-control"
+                                       inputmode="tel"
+                                       pattern="[0-9+\-\s()]+"
+                                       title="Телефонният номер може да съдържа само цифри, интервали, +, - и скоби." />
                                 <span asp-validation-for="Phone" class="text-danger"></span>
+                                <div class="form-text">
+                                    Пример: 0888123456, +359888123456, +359 888 123 456, (084) 123-456
+                                </div>
                             </div>
 
                             <div class="col-md-6">
@@ -52,6 +59,13 @@
                                 <label asp-for="CheckOut" class="form-label">Напускане</label>
                                 <input asp-for="CheckOut" type="date" class="form-control" />
                                 <span asp-validation-for="CheckOut" class="text-danger"></span>
+                            </div>
+
+                            <div class="col-12">
+                                <div class="form-text">
+                                    Може да се въвежда изцяло минало запитване само до <strong>1 месец назад</strong>.
+                                    По-стари минали запитвания не са позволени.
+                                </div>
                             </div>
 
                             <div class="col-md-6">

@@ -6,11 +6,13 @@ namespace Hotel.Models
     {
         public int Id { get; set; }
 
-        [Required]
+        [Required(ErrorMessage = "Името е задължително.")]
         [Display(Name = "Име")]
         public string Name { get; set; } = string.Empty;
 
-        [Required]
+        [Required(ErrorMessage = "Телефонът е задължителен.")]
+        [StringLength(30, ErrorMessage = "Телефонният номер не може да бъде по-дълъг от 30 символа.")]
+        [RegularExpression(@"^[0-9+\-\s()]+$", ErrorMessage = "Телефонният номер може да съдържа само цифри, интервали, +, - и скоби.")]
         [Display(Name = "Телефон")]
         public string Phone { get; set; } = string.Empty;
 
@@ -22,7 +24,7 @@ namespace Hotel.Models
         [Display(Name = "Напускане")]
         public DateTime CheckOut { get; set; }
 
-        [Range(1, 20)]
+        [Range(1, 20, ErrorMessage = "Броят гости трябва да бъде между 1 и 20.")]
         [Display(Name = "Брой гости")]
         public int GuestsCount { get; set; }
 
