@@ -18,10 +18,12 @@ namespace Hotel.Models
 
         [DataType(DataType.Date)]
         [Display(Name = "Настаняване")]
+        [Required(ErrorMessage = "Датата на настаняване е задължителна.")]
         public DateTime CheckIn { get; set; }
 
         [DataType(DataType.Date)]
         [Display(Name = "Напускане")]
+        [Required(ErrorMessage = "Датата на напускане е задължителна.")]
         public DateTime CheckOut { get; set; }
 
         [Range(1, 20, ErrorMessage = "Броят гости трябва да бъде между 1 и 20.")]

@@ -1,5 +1,6 @@
 ﻿@using System.Linq
 @using Microsoft.AspNetCore.Mvc.Rendering
+@using Hotel.Helpers
 @model Hotel.Models.Reservation
 
 @{
@@ -80,12 +81,11 @@
                     </div>
 
                     <div class="col-md-4">
-                        <label asp-for="Status" class="form-label">Статус</label>
-                        <select asp-for="Status" class="form-select" asp-items="ViewBag.ReservationStatuses"></select>
-                        <span asp-validation-for="Status" class="text-danger"></span>
+                        <label class="form-label">Статус</label>
+                        <input class="form-control" value="Определя се автоматично според датите" readonly />
                     </div>
 
-                    <div class="col-md-8">
+                    <div class="col-md-6">
                         <label asp-for="RoomId" class="form-label">Стая</label>
                         <select asp-for="RoomId" class="form-select" asp-items="ViewBag.RoomList">
                             @if (hasSearchedRooms && !hasAvailableRooms)

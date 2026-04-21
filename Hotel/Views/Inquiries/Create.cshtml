@@ -2,6 +2,7 @@
 
 @{
     ViewData["Title"] = "Изпрати запитване";
+    var today = DateTime.Today.ToString("yyyy-MM-dd");
 }
 
 <div class="container py-4">
@@ -48,20 +49,20 @@
 
                             <div class="col-md-6">
                                 <label asp-for="CheckIn" class="form-label">Настаняване</label>
-                                <input asp-for="CheckIn" type="date" class="form-control" />
+                                <input asp-for="CheckIn"
+                                       type="date"
+                                       class="form-control"
+                                       min="@today" />
                                 <span asp-validation-for="CheckIn" class="text-danger"></span>
                             </div>
 
                             <div class="col-md-6">
                                 <label asp-for="CheckOut" class="form-label">Напускане</label>
-                                <input asp-for="CheckOut" type="date" class="form-control" />
+                                <input asp-for="CheckOut"
+                                       type="date"
+                                       class="form-control"
+                                       min="@today" />
                                 <span asp-validation-for="CheckOut" class="text-danger"></span>
-                            </div>
-
-                            <div class="col-12">
-                                <div class="form-text">
-                                    Запитване може да се изпраща само за днес или за бъдещ период.
-                                </div>
                             </div>
 
                             <div class="col-md-6">

@@ -1,4 +1,5 @@
 ﻿@model Hotel.Models.Reservation
+@using Hotel.Helpers
 
 @{
     ViewData["Title"] = "Редакция на резервация";
@@ -9,6 +10,20 @@
         <h1 class="mb-0">Редакция на резервация</h1>
         <a asp-action="Index" class="btn btn-outline-secondary">Назад към резервациите</a>
     </div>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success">
+            @TempData["SuccessMessage"]
+        </div>
+    }
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger">
+            @TempData["ErrorMessage"]
+        </div>
+    }
 
     @if (!ViewData.ModelState.IsValid)
     {
@@ -22,13 +37,13 @@
                 <input asp-for="Id" type="hidden" />
 
                 <div class="row g-3">
-                    <div class="col-md-6">
+                    <div class="col-md-4">
                         <label asp-for="GuestName" class="form-label">Име на гост</label>
                         <input asp-for="GuestName" class="form-control" />
                         <span asp-validation-for="GuestName" class="text-danger"></span>
                     </div>
 
-                    <div class="col-md-6">
+                    <div class="col-md-4">
                         <label asp-for="Phone" class="form-label">Телефон</label>
                         <input asp-for="Phone"
                                class="form-control"
@@ -36,6 +51,11 @@
                                pattern="[0-9+\-\s()]+"
                                title="Телефонният номер може да съдържа само цифри, интервали, +, - и скоби." />
                         <span asp-validation-for="Phone" class="text-danger"></span>
+                    </div>
+
+                    <div class="col-md-4">
+                        <label class="form-label">Текущ статус</label>
+                        <input class="form-control" value="@ReservationUiHelper.GetReservationStatusText(Model.Status)" readonly />
                     </div>
 
                     <div class="col-md-3">
@@ -64,36 +84,9 @@
                         <span asp-validation-for="RoomId" class="text-danger"></span>
                     </div>
 
-                    <div class="col-md-4">
-                        <label asp-for="Status" class="form-label">Статус</label>
-                        <select asp-for="Status" class="form-select" id="Status">
-                            @foreach (var status in Enum.GetValues(typeof(Hotel.Enums.ReservationStatus)).Cast<Hotel.Enums.ReservationStatus>())
-                            {
-                                var statusValue = ((int)status).ToString();
-                                var statusText = Hotel.Helpers.ReservationUiHelper.GetReservationStatusText(status);
-
-                                if (status == Hotel.Enums.ReservationStatus.CheckedOut)
-                                {
-                                    if (Model.IsPaid)
-                                    {
-                                        <option value="@statusValue" selected="@(status == Model.Status ? "selected" : null)">@statusText</option>
-                                    }
-                                }
-                                else
-                                {
-                                    <option value="@statusValue" selected="@(status == Model.Status ? "selected" : null)">@statusText</option>
-                                }
-                            }
-                        </select>
-                        <span asp-validation-for="Status" class="text-danger"></span>
-                        <div id="checkedOutHint" class="form-text text-danger @(Model.IsPaid ? "d-none" : "")">
-                            Опцията „Напуснал“ се показва само когато резервацията е маркирана като платена.
-                        </div>
-                    </div>
-
                     <div class="col-md-4 d-flex align-items-end">
                         <div class="form-check mt-4">
-                            <input asp-for="IsPaid" class="form-check-input" id="IsPaid" />
+                            <input asp-for="IsPaid" class="form-check-input" />
                             <label asp-for="IsPaid" class="form-check-label">Платено</label>
                         </div>
                     </div>
@@ -103,6 +96,12 @@
                         <input asp-for="TotalAmount" class="form-control" readonly />
                         <div class="form-text">
                             Сумата се преизчислява автоматично според стаята и броя нощувки при запис.
+                        </div>
+                    </div>
+
+                    <div class="col-12">
+                        <div class="form-text">
+                            Статусът се определя автоматично според датите на резервацията.
                         </div>
                     </div>
 
@@ -141,47 +140,4 @@
     @{
         await Html.RenderPartialAsync("_ValidationScriptsPartial");
     }
-
-    <script>
-        (function () {
-            const isPaidCheckbox = document.getElementById('IsPaid');
-            const statusSelect = document.getElementById('Status');
-            const checkedOutValue = '@((int)Hotel.Enums.ReservationStatus.CheckedOut)';
-            const checkedOutText = 'Напуснал';
-            const checkedOutHint = document.getElementById('checkedOutHint');
-
-            if (!isPaidCheckbox || !statusSelect) {
-                return;
-            }
-
-            function syncCheckedOutOption() {
-                const existingOption = Array.from(statusSelect.options).find(option => option.value === checkedOutValue);
-
-                if (isPaidCheckbox.checked) {
-                    if (!existingOption) {
-                        const option = document.createElement('option');
-                        option.value = checkedOutValue;
-                        option.text = checkedOutText;
-                        statusSelect.appendChild(option);
-                    }
-
-                    checkedOutHint?.classList.add('d-none');
-                    return;
-                }
-
-                if (statusSelect.value === checkedOutValue) {
-                    statusSelect.selectedIndex = 0;
-                }
-
-                if (existingOption) {
-                    existingOption.remove();
-                }
-
-                checkedOutHint?.classList.remove('d-none');
-            }
-
-            isPaidCheckbox.addEventListener('change', syncCheckedOutOption);
-            syncCheckedOutOption();
-        })();
-    </script>
 }

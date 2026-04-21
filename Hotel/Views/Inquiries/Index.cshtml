@@ -109,6 +109,13 @@
                                             Превърни в резервация
                                         </a>
                                     }
+
+                                    @if (User.IsInRole("Administrator"))
+                                    {
+                                        <a asp-action="Delete" asp-route-id="@item.Id" class="btn btn-sm btn-danger">
+                                            Изтрий
+                                        </a>
+                                    }
                                 </div>
                             </td>
                         </tr>

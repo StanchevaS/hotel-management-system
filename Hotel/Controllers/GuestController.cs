@@ -55,18 +55,51 @@ namespace Hotel.Controllers
         [HttpGet]
         public IActionResult Availability()
         {
+            ViewBag.CheckIn = DateTime.Today;
+            ViewBag.CheckOut = DateTime.Today.AddDays(1);
+            ViewBag.GuestsCount = 2;
+
             return View();
         }
 
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Availability(DateTime checkIn, DateTime checkOut, int guestsCount)
         {
             await _hotelService.AutoCompleteExpiredReservationsAsync();
             await _hotelService.RecalculateAllRoomStatusesAsync();
 
+            checkIn = checkIn.Date;
+            checkOut = checkOut.Date;
+
+            var today = DateTime.Today;
+
+            if (checkIn < today)
+            {
+                ModelState.AddModelError("checkIn", "Настаняването не може да бъде в минал период.");
+            }
+
+            if (checkOut < today)
+            {
+                ModelState.AddModelError("checkOut", "Напускането не може да бъде в минал период.");
+            }
+
             if (checkOut <= checkIn)
             {
                 ModelState.AddModelError(string.Empty, "Датата на напускане трябва да е след датата на настаняване.");
+            }
+
+            if (guestsCount <= 0)
+            {
+                ModelState.AddModelError("guestsCount", "Броят гости трябва да бъде поне 1.");
+            }
+
+            ViewBag.CheckIn = checkIn;
+            ViewBag.CheckOut = checkOut;
+            ViewBag.GuestsCount = guestsCount;
+
+            if (!ModelState.IsValid)
+            {
                 return View();
             }
 
@@ -79,9 +112,6 @@ namespace Hotel.Controllers
                     .ToList();
             }
 
-            ViewBag.CheckIn = checkIn;
-            ViewBag.CheckOut = checkOut;
-            ViewBag.GuestsCount = guestsCount;
             ViewBag.HasSearched = true;
 
             return View(availableRooms);

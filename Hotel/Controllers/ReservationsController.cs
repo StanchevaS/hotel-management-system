@@ -26,6 +26,7 @@ namespace Hotel.Controllers
         public async Task<IActionResult> Index(string? searchTerm, DateTime? checkIn, DateTime? checkOut, int? roomId, string? sortOrder)
         {
             await _hotelService.AutoCompleteExpiredReservationsAsync();
+            await NormalizeReservationStatusesAsync();
             await _hotelService.RecalculateAllRoomStatusesAsync();
 
             ViewBag.SearchTerm = searchTerm;
@@ -92,17 +93,20 @@ namespace Hotel.Controllers
             string? preferredRoomNumber)
         {
             await _hotelService.AutoCompleteExpiredReservationsAsync();
+            await NormalizeReservationStatusesAsync();
             await _hotelService.RecalculateAllRoomStatusesAsync();
 
             var reservation = new Reservation
             {
                 CheckIn = checkIn?.Date ?? DateTime.Today,
                 CheckOut = checkOut?.Date ?? DateTime.Today.AddDays(1),
-                Status = ReservationStatus.Pending,
+                Status = ReservationStatus.Confirmed,
                 GuestName = guestName ?? string.Empty,
                 Phone = phone ?? string.Empty,
                 GuestsCount = guestsCount ?? 1
             };
+
+            reservation.Status = GetAutomaticReservationStatus(reservation);
 
             var rooms = await _context.Rooms
                 .OrderBy(r => r.Number)
@@ -138,11 +142,14 @@ namespace Hotel.Controllers
         public async Task<IActionResult> CheckAvailability(Reservation reservation, int? inquiryId, string? preferredRoomNumber)
         {
             await _hotelService.AutoCompleteExpiredReservationsAsync();
+            await NormalizeReservationStatusesAsync();
             await _hotelService.RecalculateAllRoomStatusesAsync();
 
             ViewBag.InquiryId = inquiryId;
             ViewBag.PreferredRoomNumber = preferredRoomNumber;
             ViewBag.HasSearchedRooms = true;
+
+            reservation.Status = GetAutomaticReservationStatus(reservation);
 
             ValidateReservationDates(reservation);
 
@@ -187,11 +194,14 @@ namespace Hotel.Controllers
         public async Task<IActionResult> Create(Reservation reservation, int? inquiryId, string? preferredRoomNumber)
         {
             await _hotelService.AutoCompleteExpiredReservationsAsync();
+            await NormalizeReservationStatusesAsync();
             await _hotelService.RecalculateAllRoomStatusesAsync();
 
             ViewBag.InquiryId = inquiryId;
             ViewBag.PreferredRoomNumber = preferredRoomNumber;
             ViewBag.HasSearchedRooms = true;
+
+            reservation.Status = GetAutomaticReservationStatus(reservation);
 
             ValidateReservationDates(reservation);
 
@@ -251,6 +261,8 @@ namespace Hotel.Controllers
                 reservation.CheckOut,
                 room.PricePerNight);
 
+            reservation.Status = GetAutomaticReservationStatus(reservation);
+
             _context.Reservations.Add(reservation);
 
             if (inquiryId.HasValue)
@@ -273,6 +285,7 @@ namespace Hotel.Controllers
         public async Task<IActionResult> Edit(int id)
         {
             await _hotelService.AutoCompleteExpiredReservationsAsync();
+            await NormalizeReservationStatusesAsync();
             await _hotelService.RecalculateAllRoomStatusesAsync();
 
             var reservation = await _context.Reservations
@@ -284,6 +297,8 @@ namespace Hotel.Controllers
                 return NotFound();
             }
 
+            reservation.Status = GetAutomaticReservationStatus(reservation);
+
             await LoadAllReservationLists(reservation.RoomId, reservation.Status);
             return View(reservation);
         }
@@ -293,7 +308,10 @@ namespace Hotel.Controllers
         public async Task<IActionResult> Edit(Reservation reservation)
         {
             await _hotelService.AutoCompleteExpiredReservationsAsync();
+            await NormalizeReservationStatusesAsync();
             await _hotelService.RecalculateAllRoomStatusesAsync();
+
+            reservation.Status = GetAutomaticReservationStatus(reservation);
 
             await LoadAllReservationLists(reservation.RoomId, reservation.Status);
 
@@ -341,11 +359,6 @@ namespace Hotel.Controllers
                 return View(reservation);
             }
 
-            if (reservation.Status == ReservationStatus.CheckedOut && !reservation.IsPaid)
-            {
-                ModelState.AddModelError(string.Empty, "Гостът не може да напусне хотела, преди резервацията да е маркирана като платена.");
-            }
-
             if (!ModelState.IsValid)
             {
                 return View(reservation);
@@ -357,12 +370,16 @@ namespace Hotel.Controllers
             existingReservation.CheckOut = reservation.CheckOut;
             existingReservation.GuestsCount = reservation.GuestsCount;
             existingReservation.RoomId = selectedRoomId;
-            existingReservation.Status = reservation.Status;
             existingReservation.IsPaid = reservation.IsPaid;
             existingReservation.TotalAmount = _hotelService.CalculateTotalAmount(
                 reservation.CheckIn,
                 reservation.CheckOut,
                 newRoom.PricePerNight);
+
+            if (existingReservation.Status != ReservationStatus.Cancelled)
+            {
+                existingReservation.Status = GetAutomaticReservationStatus(existingReservation);
+            }
 
             await _context.SaveChangesAsync();
 
@@ -382,6 +399,7 @@ namespace Hotel.Controllers
         public async Task<IActionResult> Cancel(int id)
         {
             await _hotelService.AutoCompleteExpiredReservationsAsync();
+            await NormalizeReservationStatusesAsync();
             await _hotelService.RecalculateAllRoomStatusesAsync();
 
             var reservation = await _context.Reservations
@@ -456,6 +474,7 @@ namespace Hotel.Controllers
         public async Task<IActionResult> Calendar(DateTime? startDate, int days = 7, int? roomId = null)
         {
             await _hotelService.AutoCompleteExpiredReservationsAsync();
+            await NormalizeReservationStatusesAsync();
             await _hotelService.RecalculateAllRoomStatusesAsync();
 
             var start = (startDate ?? DateTime.Today).Date;
@@ -550,6 +569,53 @@ namespace Hotel.Controllers
                     ModelState.AddModelError(string.Empty,
                         "Не може да се създава или редактира изцяло минала резервация, ако датите са по-стари от 1 месец назад.");
                 }
+            }
+        }
+
+        private ReservationStatus GetAutomaticReservationStatus(Reservation reservation)
+        {
+            if (reservation.Status == ReservationStatus.Cancelled)
+            {
+                return ReservationStatus.Cancelled;
+            }
+
+            var today = DateTime.Today;
+
+            if (today >= reservation.CheckOut.Date)
+            {
+                return ReservationStatus.CheckedOut;
+            }
+
+            if (today >= reservation.CheckIn.Date)
+            {
+                return ReservationStatus.CheckedIn;
+            }
+
+            return ReservationStatus.Confirmed;
+        }
+
+        private async Task NormalizeReservationStatusesAsync()
+        {
+            var reservations = await _context.Reservations
+                .Where(r => r.Status != ReservationStatus.Cancelled)
+                .ToListAsync();
+
+            var hasChanges = false;
+
+            foreach (var reservation in reservations)
+            {
+                var newStatus = GetAutomaticReservationStatus(reservation);
+
+                if (reservation.Status != newStatus)
+                {
+                    reservation.Status = newStatus;
+                    hasChanges = true;
+                }
+            }
+
+            if (hasChanges)
+            {
+                await _context.SaveChangesAsync();
             }
         }
     }

@@ -29,7 +29,7 @@ namespace Hotel.Controllers
             {
                 CheckIn = DateTime.Today,
                 CheckOut = DateTime.Today.AddDays(1),
-                GuestsCount = 1
+                GuestsCount = 2
             };
 
             return View(inquiry);
@@ -138,6 +138,42 @@ namespace Hotel.Controllers
             return RedirectToAction(nameof(Index));
         }
 
+        [Authorize(Roles = "Administrator")]
+        [HttpGet]
+        public async Task<IActionResult> Delete(int id)
+        {
+            var inquiry = await _context.Inquiries
+                .AsNoTracking()
+                .FirstOrDefaultAsync(i => i.Id == id);
+
+            if (inquiry == null)
+            {
+                return NotFound();
+            }
+
+            return View(inquiry);
+        }
+
+        [Authorize(Roles = "Administrator")]
+        [HttpPost, ActionName("Delete")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteConfirmed(int id)
+        {
+            var inquiry = await _context.Inquiries.FindAsync(id);
+
+            if (inquiry == null)
+            {
+                TempData["ErrorMessage"] = "Запитването не беше намерено.";
+                return RedirectToAction(nameof(Index));
+            }
+
+            _context.Inquiries.Remove(inquiry);
+            await _context.SaveChangesAsync();
+
+            TempData["SuccessMessage"] = "Запитването беше изтрито успешно.";
+            return RedirectToAction(nameof(Index));
+        }
+
         private static List<string> GetStatusOptions() => new()
         {
             "Ново",
@@ -163,14 +199,22 @@ namespace Hotel.Controllers
         {
             var today = DateTime.Today;
 
-            if (inquiry.CheckIn.Date < today)
+            inquiry.CheckIn = inquiry.CheckIn.Date;
+            inquiry.CheckOut = inquiry.CheckOut.Date;
+
+            if (inquiry.CheckIn < today)
             {
-                ModelState.AddModelError(string.Empty, "Запитване не може да бъде създадено за отминал период.");
+                ModelState.AddModelError(nameof(inquiry.CheckIn), "Датата на настаняване не може да бъде в минал период.");
+            }
+
+            if (inquiry.CheckOut < today)
+            {
+                ModelState.AddModelError(nameof(inquiry.CheckOut), "Датата на напускане не може да бъде в минал период.");
             }
 
             if (inquiry.CheckOut <= inquiry.CheckIn)
             {
-                ModelState.AddModelError(string.Empty, "Датата на напускане трябва да е след датата на настаняване.");
+                ModelState.AddModelError(nameof(inquiry.CheckOut), "Датата на напускане трябва да е след датата на настаняване.");
             }
         }
     }

@@ -58,14 +58,10 @@ namespace Hotel.Controllers
 
             room.Capacity = RoomUiHelper.GetDefaultCapacity(room.Type);
             room.PricePerNight = RoomUiHelper.GetDefaultPrice(room.Type);
+            room.Status = RoomStatus.Available;
 
             ModelState.Remove(nameof(Room.Capacity));
             ModelState.Remove(nameof(Room.PricePerNight));
-
-            if (string.IsNullOrWhiteSpace(room.Number))
-            {
-                ModelState.AddModelError(nameof(room.Number), "Номерът на стаята е задължителен.");
-            }
 
             bool duplicateExists = await _context.Rooms
                 .AnyAsync(r => r.Number.ToLower() == room.Number.ToLower());
@@ -115,11 +111,7 @@ namespace Hotel.Controllers
 
             ModelState.Remove(nameof(Room.Capacity));
             ModelState.Remove(nameof(Room.PricePerNight));
-
-            if (string.IsNullOrWhiteSpace(room.Number))
-            {
-                ModelState.AddModelError(nameof(room.Number), "Номерът на стаята е задължителен.");
-            }
+            ModelState.Remove(nameof(Room.Status));
 
             bool duplicateExists = await _context.Rooms
                 .AnyAsync(r => r.Id != room.Id &&
@@ -132,7 +124,11 @@ namespace Hotel.Controllers
 
             if (!ModelState.IsValid)
             {
-                LoadRoomLists(room.Type, room.Status);
+                var currentRoomForView = await _context.Rooms
+                    .AsNoTracking()
+                    .FirstOrDefaultAsync(r => r.Id == room.Id);
+
+                LoadRoomLists(room.Type, currentRoomForView?.Status ?? RoomStatus.Available);
                 return View(room);
             }
 
@@ -144,7 +140,6 @@ namespace Hotel.Controllers
 
             existingRoom.Number = room.Number;
             existingRoom.Type = room.Type;
-            existingRoom.Status = room.Status;
             existingRoom.Capacity = room.Capacity;
             existingRoom.PricePerNight = room.PricePerNight;
 
@@ -157,6 +152,59 @@ namespace Hotel.Controllers
 
             TempData["SuccessMessage"] = "Стаята е редактирана успешно.";
             return RedirectToAction(nameof(Index));
+        }
+
+        [Authorize(Roles = "Administrator")]
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> MarkAsMaintenance(int id)
+        {
+            var room = await _context.Rooms.FirstOrDefaultAsync(r => r.Id == id);
+
+            if (room == null)
+            {
+                TempData["ErrorMessage"] = "Стаята не беше намерена.";
+                return RedirectToAction(nameof(Index));
+            }
+
+            await _hotelService.AutoCompleteExpiredReservationsAsync();
+            await _hotelService.RecalculateRoomStatusAsync(room.Id);
+
+            if (room.Status == RoomStatus.Occupied || room.Status == RoomStatus.Reserved)
+            {
+                TempData["ErrorMessage"] = $"Стая {room.Number} не може да бъде маркирана като в ремонт, защото има активна или предстояща резервация.";
+                return RedirectToAction(nameof(Edit), new { id });
+            }
+
+            room.Status = RoomStatus.Maintenance;
+            await _context.SaveChangesAsync();
+
+            TempData["SuccessMessage"] = $"Стая {room.Number} е маркирана като в ремонт.";
+            return RedirectToAction(nameof(Edit), new { id });
+        }
+
+        [Authorize(Roles = "Administrator")]
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> RemoveFromMaintenance(int id)
+        {
+            var room = await _context.Rooms.FirstOrDefaultAsync(r => r.Id == id);
+
+            if (room == null)
+            {
+                TempData["ErrorMessage"] = "Стаята не беше намерена.";
+                return RedirectToAction(nameof(Index));
+            }
+
+            if (room.Status == RoomStatus.Maintenance)
+            {
+                room.Status = RoomStatus.Available;
+                await _context.SaveChangesAsync();
+                await _hotelService.RecalculateRoomStatusAsync(room.Id);
+            }
+
+            TempData["SuccessMessage"] = $"Стая {room.Number} е извадена от ремонт.";
+            return RedirectToAction(nameof(Edit), new { id });
         }
 
         [Authorize(Roles = "Administrator")]

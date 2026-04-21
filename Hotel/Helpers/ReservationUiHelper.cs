@@ -8,11 +8,11 @@ namespace Hotel.Helpers
         {
             return status switch
             {
-                ReservationStatus.Pending => "Чакаща",
                 ReservationStatus.Confirmed => "Потвърдена",
                 ReservationStatus.CheckedIn => "Настанен",
                 ReservationStatus.CheckedOut => "Напуснал",
                 ReservationStatus.Cancelled => "Отказана",
+                ReservationStatus.Pending => "Потвърдена",
                 _ => status.ToString()
             };
         }

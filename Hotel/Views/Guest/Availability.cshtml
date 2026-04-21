@@ -7,6 +7,7 @@
     DateTime? checkIn = ViewBag.CheckIn as DateTime?;
     DateTime? checkOut = ViewBag.CheckOut as DateTime?;
     int? guestsCount = ViewBag.GuestsCount as int?;
+    var today = DateTime.Today.ToString("yyyy-MM-dd");
 }
 
 <div class="card-style">
@@ -15,21 +16,39 @@
     <form asp-action="Availability" method="post" class="row g-3 mb-4">
         @Html.AntiForgeryToken()
 
-        <div asp-validation-summary="ModelOnly" class="text-danger mb-2"></div>
+        <div asp-validation-summary="All" class="text-danger mb-2"></div>
 
         <div class="col-md-4">
-            <label class="form-label">Настаняване</label>
-            <input type="date" name="checkIn" value="@(checkIn?.ToString("yyyy-MM-dd"))" class="form-control" required />
+            <label class="form-label" for="checkIn">Настаняване</label>
+            <input type="date"
+                   id="checkIn"
+                   name="checkIn"
+                   value="@(checkIn?.ToString("yyyy-MM-dd"))"
+                   min="@today"
+                   class="form-control"
+                   required />
         </div>
 
         <div class="col-md-4">
-            <label class="form-label">Напускане</label>
-            <input type="date" name="checkOut" value="@(checkOut?.ToString("yyyy-MM-dd"))" class="form-control" required />
+            <label class="form-label" for="checkOut">Напускане</label>
+            <input type="date"
+                   id="checkOut"
+                   name="checkOut"
+                   value="@(checkOut?.ToString("yyyy-MM-dd"))"
+                   min="@today"
+                   class="form-control"
+                   required />
         </div>
 
         <div class="col-md-4">
-            <label class="form-label">Брой гости</label>
-            <input type="number" name="guestsCount" value="@(guestsCount ?? 1)" min="1" class="form-control" required />
+            <label class="form-label" for="guestsCount">Брой гости</label>
+            <input type="number"
+                   id="guestsCount"
+                   name="guestsCount"
+                   value="@(guestsCount ?? 1)"
+                   min="1"
+                   class="form-control"
+                   required />
         </div>
 
         <div class="col-12">
