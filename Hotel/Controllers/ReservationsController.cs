@@ -35,8 +35,25 @@ namespace Hotel.Controllers
             ViewBag.RoomId = roomId;
             ViewBag.SortOrder = sortOrder;
 
-            var rooms = await _context.Rooms.OrderBy(r => r.Number).ToListAsync();
+            var rooms = await _context.Rooms
+                .OrderBy(r => r.Number)
+                .ToListAsync();
+
             ViewBag.RoomList = new SelectList(rooms, "Id", "Number", roomId);
+
+            var today = DateTime.Today;
+
+            var unpaidCheckoutToday = await _context.Reservations
+                .Include(r => r.Room)
+                .Where(r =>
+                    r.CheckOut.Date == today &&
+                    !r.IsPaid &&
+                    r.Status != ReservationStatus.Cancelled)
+                .OrderBy(r => r.Room != null ? r.Room.Number : "")
+                .ThenBy(r => r.GuestName)
+                .ToListAsync();
+
+            ViewBag.UnpaidCheckoutToday = unpaidCheckoutToday;
 
             var query = _context.Reservations
                 .Include(r => r.Room)
@@ -109,6 +126,7 @@ namespace Hotel.Controllers
             reservation.Status = GetAutomaticReservationStatus(reservation);
 
             var rooms = await _context.Rooms
+                .Where(r => r.Status != RoomStatus.Maintenance)
                 .OrderBy(r => r.Number)
                 .ToListAsync();
 
@@ -163,6 +181,10 @@ namespace Hotel.Controllers
                 reservation.CheckIn,
                 reservation.CheckOut);
 
+            availableRooms = availableRooms
+                .Where(r => r.Status != RoomStatus.Maintenance)
+                .ToList();
+
             if (reservation.GuestsCount > 0)
             {
                 availableRooms = availableRooms
@@ -209,6 +231,10 @@ namespace Hotel.Controllers
                 reservation.CheckIn,
                 reservation.CheckOut);
 
+            availableRooms = availableRooms
+                .Where(r => r.Status != RoomStatus.Maintenance)
+                .ToList();
+
             if (reservation.GuestsCount > 0)
             {
                 availableRooms = availableRooms
@@ -223,7 +249,13 @@ namespace Hotel.Controllers
                 return View(reservation);
             }
 
-            var selectedRoomId = reservation.RoomId!.Value;
+            if (!reservation.RoomId.HasValue)
+            {
+                ModelState.AddModelError(nameof(reservation.RoomId), "Моля, изберете стая.");
+                return View(reservation);
+            }
+
+            var selectedRoomId = reservation.RoomId.Value;
 
             var room = await _context.Rooms.FirstOrDefaultAsync(r => r.Id == selectedRoomId);
 
@@ -325,8 +357,14 @@ namespace Hotel.Controllers
                 return NotFound();
             }
 
+            if (!reservation.RoomId.HasValue)
+            {
+                ModelState.AddModelError(nameof(reservation.RoomId), "Моля, изберете стая.");
+                return View(reservation);
+            }
+
             var oldRoomId = existingReservation.RoomId;
-            var selectedRoomId = reservation.RoomId!.Value;
+            var selectedRoomId = reservation.RoomId.Value;
 
             var newRoom = await _context.Rooms.FirstOrDefaultAsync(r => r.Id == selectedRoomId);
             if (newRoom == null)
@@ -383,9 +421,12 @@ namespace Hotel.Controllers
 
             await _context.SaveChangesAsync();
 
-            await _hotelService.RecalculateRoomStatusAsync(existingReservation.RoomId.Value);
+            if (existingReservation.RoomId.HasValue)
+            {
+                await _hotelService.RecalculateRoomStatusAsync(existingReservation.RoomId.Value);
+            }
 
-            if (oldRoomId != existingReservation.RoomId)
+            if (oldRoomId.HasValue && oldRoomId != existingReservation.RoomId)
             {
                 await _hotelService.RecalculateRoomStatusAsync(oldRoomId.Value);
             }
@@ -425,7 +466,11 @@ namespace Hotel.Controllers
 
             reservation.Status = ReservationStatus.Cancelled;
             await _context.SaveChangesAsync();
-            await _hotelService.RecalculateRoomStatusAsync(reservation.RoomId!.Value);
+
+            if (reservation.RoomId.HasValue)
+            {
+                await _hotelService.RecalculateRoomStatusAsync(reservation.RoomId.Value);
+            }
 
             TempData["SuccessMessage"] = "Резервацията е отказана успешно.";
             return RedirectToAction(nameof(Index));
@@ -459,12 +504,15 @@ namespace Hotel.Controllers
                 return RedirectToAction(nameof(Index));
             }
 
-            var roomId = reservation.RoomId!.Value;
+            var roomId = reservation.RoomId;
 
             _context.Reservations.Remove(reservation);
             await _context.SaveChangesAsync();
 
-            await _hotelService.RecalculateRoomStatusAsync(roomId);
+            if (roomId.HasValue)
+            {
+                await _hotelService.RecalculateRoomStatusAsync(roomId.Value);
+            }
 
             TempData["SuccessMessage"] = "Резервацията е изтрита успешно.";
             return RedirectToAction(nameof(Index));
@@ -490,7 +538,6 @@ namespace Hotel.Controllers
             ViewBag.Dates = Enumerable.Range(0, days).Select(i => start.AddDays(i)).ToList();
 
             var roomsQuery = _context.Rooms.OrderBy(r => r.Number).AsQueryable();
-
             var allRooms = await roomsQuery.ToListAsync();
 
             ViewBag.RoomList = allRooms
@@ -543,12 +590,17 @@ namespace Hotel.Controllers
                 .ToList();
 
             ViewBag.ReservationStatuses = EnumSelectListHelper.CreateSelectList<ReservationStatus>(
-                ReservationUiHelper.GetReservationStatusText, selectedStatus);
+                ReservationUiHelper.GetReservationStatusText,
+                selectedStatus);
         }
 
         private async Task LoadAllReservationLists(int? selectedRoomId, ReservationStatus selectedStatus)
         {
-            var rooms = await _context.Rooms.OrderBy(r => r.Number).ToListAsync();
+            var rooms = await _context.Rooms
+                .Where(r => r.Status != RoomStatus.Maintenance || (selectedRoomId.HasValue && r.Id == selectedRoomId.Value))
+                .OrderBy(r => r.Number)
+                .ToListAsync();
+
             LoadReservationLists(rooms, selectedRoomId, selectedStatus);
         }
 
@@ -556,6 +608,9 @@ namespace Hotel.Controllers
         {
             var today = DateTime.Today;
             var oneMonthBack = today.AddMonths(-1);
+
+            reservation.CheckIn = reservation.CheckIn.Date;
+            reservation.CheckOut = reservation.CheckOut.Date;
 
             if (reservation.CheckOut <= reservation.CheckIn)
             {
@@ -566,7 +621,8 @@ namespace Hotel.Controllers
             {
                 if (reservation.CheckIn.Date < oneMonthBack || reservation.CheckOut.Date < oneMonthBack)
                 {
-                    ModelState.AddModelError(string.Empty,
+                    ModelState.AddModelError(
+                        string.Empty,
                         "Не може да се създава или редактира изцяло минала резервация, ако датите са по-стари от 1 месец назад.");
                 }
             }
@@ -581,9 +637,14 @@ namespace Hotel.Controllers
 
             var today = DateTime.Today;
 
-            if (today >= reservation.CheckOut.Date)
+            if (today > reservation.CheckOut.Date)
             {
                 return ReservationStatus.CheckedOut;
+            }
+
+            if (today == reservation.CheckOut.Date)
+            {
+                return ReservationStatus.CheckingOutToday;
             }
 
             if (today >= reservation.CheckIn.Date)

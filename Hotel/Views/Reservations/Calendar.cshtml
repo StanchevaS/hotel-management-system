@@ -15,6 +15,7 @@
     {
         return Model.FirstOrDefault(r =>
             r.RoomId == roomId &&
+            r.Status != ReservationStatus.Cancelled &&
             r.CheckIn.Date <= date.Date &&
             r.CheckOut.Date > date.Date);
     }
@@ -25,27 +26,13 @@
 
         return reservation.Status switch
         {
-            ReservationStatus.Pending => "calendar-pending",
+            ReservationStatus.Pending => "calendar-confirmed",
             ReservationStatus.Confirmed => "calendar-confirmed",
             ReservationStatus.CheckedIn => "calendar-checkedin",
+            ReservationStatus.CheckingOutToday => "calendar-checkedin",
             ReservationStatus.CheckedOut => "calendar-checkedout",
             ReservationStatus.Cancelled => "calendar-cancelled",
             _ => "calendar-free"
-        };
-    }
-
-    string GetCellText(Reservation? reservation)
-    {
-        if (reservation == null) return "Свободно";
-
-        return reservation.Status switch
-        {
-            ReservationStatus.Pending => "Чакаща",
-            ReservationStatus.Confirmed => "Резервирана",
-            ReservationStatus.CheckedIn => "Настанен",
-            ReservationStatus.CheckedOut => "Напуснал",
-            ReservationStatus.Cancelled => "Отказана",
-            _ => reservation.Status.ToString()
         };
     }
 
@@ -92,15 +79,6 @@
         </div>
     </form>
 
-    <div class="mb-3 d-flex flex-wrap gap-2">
-        <span class="calendar-legend calendar-free">Свободно</span>
-        <span class="calendar-legend calendar-pending">Чакаща</span>
-        <span class="calendar-legend calendar-confirmed">Резервирана</span>
-        <span class="calendar-legend calendar-checkedin">Настанен</span>
-        <span class="calendar-legend calendar-checkedout">Напуснал</span>
-        <span class="calendar-legend calendar-cancelled">Отказана</span>
-    </div>
-
     <div class="table-responsive">
         <table class="table table-bordered align-middle reservation-calendar">
             <thead>
@@ -132,7 +110,6 @@
                             {
                                 var reservation = GetReservationForCell(room.Id, date);
                                 var cellClass = GetCellClass(reservation);
-                                var cellText = GetCellText(reservation);
                                 var guestName = GetShortGuestName(reservation);
 
                                 <td class="@cellClass">
@@ -142,8 +119,7 @@
                                     }
                                     else
                                     {
-                                        <div class="small fw-semibold">@cellText</div>
-                                        <div class="small">@guestName</div>
+                                        <div class="small fw-semibold">@guestName</div>
                                         <div class="small text-muted">
                                             @reservation.CheckIn.ToString("dd.MM")
                                             -

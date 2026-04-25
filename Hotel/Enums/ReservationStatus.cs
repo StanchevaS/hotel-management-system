@@ -5,7 +5,8 @@
         Pending = 0,
         Confirmed = 1,
         CheckedIn = 2,
-        CheckedOut = 3,
-        Cancelled = 4
+        CheckingOutToday = 3,
+        CheckedOut = 4,
+        Cancelled = 5
     }
 }

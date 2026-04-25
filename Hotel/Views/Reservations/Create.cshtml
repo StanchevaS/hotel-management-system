@@ -1,6 +1,5 @@
 ﻿@using System.Linq
 @using Microsoft.AspNetCore.Mvc.Rendering
-@using Hotel.Helpers
 @model Hotel.Models.Reservation
 
 @{
@@ -10,6 +9,7 @@
     bool hasSearchedRooms = ViewBag.HasSearchedRooms != null && (bool)ViewBag.HasSearchedRooms;
     var roomList = ViewBag.RoomList as IEnumerable<SelectListItem>;
     bool hasAvailableRooms = roomList != null && roomList.Any();
+    var minPastDate = DateTime.Today.AddMonths(-1).ToString("yyyy-MM-dd");
 }
 
 <div class="container py-4">
@@ -25,7 +25,7 @@
 
     <div class="card shadow-sm">
         <div class="card-body">
-            <form method="post">
+            <form method="post" id="reservationForm">
                 @Html.AntiForgeryToken()
 
                 @if (inquiryId.HasValue)
@@ -57,32 +57,20 @@
 
                     <div class="col-md-3">
                         <label asp-for="CheckIn" class="form-label">Настаняване</label>
-                        <input asp-for="CheckIn" type="date" class="form-control" />
+                        <input asp-for="CheckIn" type="date" class="form-control" min="@minPastDate" />
                         <span asp-validation-for="CheckIn" class="text-danger"></span>
                     </div>
 
                     <div class="col-md-3">
                         <label asp-for="CheckOut" class="form-label">Напускане</label>
-                        <input asp-for="CheckOut" type="date" class="form-control" />
+                        <input asp-for="CheckOut" type="date" class="form-control" min="@minPastDate" />
                         <span asp-validation-for="CheckOut" class="text-danger"></span>
-                    </div>
-
-                    <div class="col-md-6">
-                        <div class="form-text mt-2">
-                            Може да се въвежда изцяло минала резервация само до <strong>1 месец назад</strong>.
-                            По-стари минали резервации не са позволени.
-                        </div>
                     </div>
 
                     <div class="col-md-2">
                         <label asp-for="GuestsCount" class="form-label">Брой гости</label>
                         <input asp-for="GuestsCount" type="number" min="1" class="form-control" />
                         <span asp-validation-for="GuestsCount" class="text-danger"></span>
-                    </div>
-
-                    <div class="col-md-4">
-                        <label class="form-label">Статус</label>
-                        <input class="form-control" value="Определя се автоматично според датите" readonly />
                     </div>
 
                     <div class="col-md-6">
@@ -140,7 +128,8 @@
 
                             <button type="submit"
                                     asp-action="Create"
-                                    class="btn btn-primary">
+                                    class="btn btn-primary"
+                                    id="saveReservationBtn">
                                 Създай резервация
                             </button>
 
@@ -159,4 +148,37 @@
     @{
         await Html.RenderPartialAsync("_ValidationScriptsPartial");
     }
+
+    <script>
+        (function () {
+            const saveBtn = document.getElementById("saveReservationBtn");
+
+            if (!saveBtn) return;
+
+            saveBtn.addEventListener("click", function (e) {
+                const checkOutInput = document.getElementById("CheckOut");
+                const isPaidInput = document.getElementById("IsPaid");
+
+                if (!checkOutInput || !isPaidInput) return;
+
+                const checkOutValue = checkOutInput.value;
+                const isPaid = isPaidInput.checked;
+
+                if (!checkOutValue || isPaid) return;
+
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
+
+                const checkOutDate = new Date(checkOutValue + "T00:00:00");
+
+                if (checkOutDate < today) {
+                    const confirmed = confirm("Резервацията е за изминал период и не е отбелязана като платена. Сигурни ли сте, че искате да продължите?");
+
+                    if (!confirmed) {
+                        e.preventDefault();
+                    }
+                }
+            });
+        })();
+    </script>
 }

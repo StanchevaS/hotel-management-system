@@ -10,6 +10,7 @@ namespace Hotel.Helpers
             {
                 ReservationStatus.Confirmed => "Потвърдена",
                 ReservationStatus.CheckedIn => "Настанен",
+                ReservationStatus.CheckingOutToday => "Напускащ днес",
                 ReservationStatus.CheckedOut => "Напуснал",
                 ReservationStatus.Cancelled => "Отказана",
                 ReservationStatus.Pending => "Потвърдена",

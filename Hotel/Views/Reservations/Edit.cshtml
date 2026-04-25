@@ -32,7 +32,7 @@
 
     <div class="card shadow-sm">
         <div class="card-body">
-            <form asp-action="Edit" method="post">
+            <form asp-action="Edit" method="post" id="reservationForm">
                 @Html.AntiForgeryToken()
                 <input asp-for="Id" type="hidden" />
 
@@ -107,7 +107,7 @@
 
                     <div class="col-12">
                         <div class="d-flex flex-wrap gap-2 mt-3">
-                            <button type="submit" class="btn btn-primary">
+                            <button type="submit" class="btn btn-primary" id="saveReservationBtn">
                                 Запази промените
                             </button>
 
@@ -140,4 +140,38 @@
     @{
         await Html.RenderPartialAsync("_ValidationScriptsPartial");
     }
+
+    <script>
+        (function () {
+            const form = document.getElementById("reservationForm");
+            const saveBtn = document.getElementById("saveReservationBtn");
+
+            if (!form || !saveBtn) return;
+
+            saveBtn.addEventListener("click", function (e) {
+                const checkOutInput = document.getElementById("CheckOut");
+                const isPaidInput = document.getElementById("IsPaid");
+
+                if (!checkOutInput || !isPaidInput) return;
+
+                const checkOutValue = checkOutInput.value;
+                const isPaid = isPaidInput.checked;
+
+                if (!checkOutValue || isPaid) return;
+
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
+
+                const checkOutDate = new Date(checkOutValue + "T00:00:00");
+
+                if (checkOutDate < today) {
+                    const confirmed = confirm("Резервацията е за изминал период и не е отбелязана като платена. Сигурни ли сте, че искате да продължите?");
+
+                    if (!confirmed) {
+                        e.preventDefault();
+                    }
+                }
+            });
+        })();
+    </script>
 }

@@ -1,7 +1,11 @@
 ﻿@model IEnumerable<Hotel.Models.Reservation>
+@using Hotel.Models
+@using Hotel.Enums
+@using Hotel.Helpers
 
 @{
     ViewData["Title"] = "Резервации";
+    var unpaidCheckoutToday = ViewBag.UnpaidCheckoutToday as List<Reservation> ?? new List<Reservation>();
 }
 
 <div class="container py-4">
@@ -24,6 +28,27 @@
     {
         <div class="alert alert-danger">
             @TempData["ErrorMessage"]
+        </div>
+    }
+
+    @if (unpaidCheckoutToday.Any())
+    {
+        <div class="alert alert-danger border-danger shadow-sm mb-4">
+            <div class="fw-bold mb-2">
+                Внимание! Има неплатени резервации с напускане днес:
+            </div>
+
+            <ul class="mb-0 ps-3">
+                @foreach (var item in unpaidCheckoutToday)
+                {
+                    <li>
+                        Стая <strong>@(item.Room != null ? item.Room.Number : "-")</strong>
+                        - @item.GuestName
+                        (@item.Phone),
+                        сума: <strong>@item.TotalAmount.ToString("0.00") €</strong>
+                    </li>
+                }
+            </ul>
         </div>
     }
 
@@ -120,7 +145,23 @@
                             <td>@item.GuestsCount</td>
                             <td>@item.CheckIn.ToString("dd.MM.yyyy")</td>
                             <td>@item.CheckOut.ToString("dd.MM.yyyy")</td>
-                            <td>@Hotel.Helpers.ReservationUiHelper.GetReservationStatusText(item.Status)</td>
+                            <td>
+                                @{
+                                    var badgeClass = item.Status switch
+                                    {
+                                        ReservationStatus.Confirmed => "bg-primary",
+                                        ReservationStatus.CheckedIn => "bg-success",
+                                        ReservationStatus.CheckingOutToday => "bg-warning text-dark",
+                                        ReservationStatus.CheckedOut => "bg-secondary",
+                                        ReservationStatus.Cancelled => "bg-dark",
+                                        _ => "bg-secondary"
+                                    };
+                                }
+
+                                <span class="badge @badgeClass">
+                                    @ReservationUiHelper.GetReservationStatusText(item.Status)
+                                </span>
+                            </td>
                             <td>
                                 @if (item.IsPaid)
                                 {
@@ -138,8 +179,8 @@
                                         Редакция
                                     </a>
 
-                                    @if (item.Status != Hotel.Enums.ReservationStatus.Cancelled &&
-                                                                item.Status != Hotel.Enums.ReservationStatus.CheckedOut)
+                                    @if (item.Status != ReservationStatus.Cancelled &&
+                                                                item.Status != ReservationStatus.CheckedOut)
                                     {
                                         <form asp-action="Cancel" method="post" class="d-inline">
                                             @Html.AntiForgeryToken()

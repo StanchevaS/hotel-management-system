@@ -235,10 +235,16 @@ namespace Hotel.Controllers
                 return RedirectToAction(nameof(Index));
             }
 
-            var hasReservations = await _context.Reservations.AnyAsync(r => r.RoomId == id);
-            if (hasReservations)
+            var today = DateTime.Today;
+
+            var hasActiveOrFutureReservations = await _context.Reservations.AnyAsync(r =>
+                r.RoomId == id &&
+                r.Status != ReservationStatus.Cancelled &&
+                r.CheckOut.Date >= today);
+
+            if (hasActiveOrFutureReservations)
             {
-                TempData["ErrorMessage"] = "Стаята не може да бъде изтрита, защото има свързани резервации.";
+                TempData["ErrorMessage"] = "Стаята не може да бъде изтрита, защото има текущи или бъдещи резервации.";
                 return RedirectToAction(nameof(Index));
             }
 
