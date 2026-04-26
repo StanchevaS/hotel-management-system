@@ -647,7 +647,12 @@ namespace Hotel.Controllers
                 return ReservationStatus.CheckingOutToday;
             }
 
-            if (today >= reservation.CheckIn.Date)
+            if (today == reservation.CheckIn.Date)
+            {
+                return ReservationStatus.ArrivingToday;
+            }
+
+            if (today > reservation.CheckIn.Date && today < reservation.CheckOut.Date)
             {
                 return ReservationStatus.CheckedIn;
             }

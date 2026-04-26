@@ -4,9 +4,10 @@
     {
         Pending = 0,
         Confirmed = 1,
-        CheckedIn = 2,
-        CheckingOutToday = 3,
-        CheckedOut = 4,
-        Cancelled = 5
+        ArrivingToday = 2,
+        CheckedIn = 3,
+        CheckingOutToday = 4,
+        CheckedOut = 5,
+        Cancelled = 6
     }
 }
