@@ -77,7 +77,7 @@ using (var scope = app.Services.CreateScope())
         }
     }
 
-    var adminEmail = "admin@hotel.local";
+    var adminEmail = "admin@hotel.bg";
     var adminPassword = "Admin123!";
 
     var adminUser = await userManager.FindByEmailAsync(adminEmail);
@@ -105,7 +105,7 @@ using (var scope = app.Services.CreateScope())
         }
     }
 
-    var receptionistEmail = "reception@hotel.local";
+    var receptionistEmail = "reception@hotel.bg";
     var receptionistPassword = "Reception123!";
 
     var receptionistUser = await userManager.FindByEmailAsync(receptionistEmail);
